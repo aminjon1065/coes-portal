@@ -34,8 +34,16 @@ module.exports = {
       name: 'db-restricted',
       severity: 'error',
       comment:
-        'packages/db импортируется только из apps/api и apps/worker (§ 3).',
-      from: { pathNot: '^(packages/db|apps/api|apps/worker)/' },
+        'packages/db импортируется только из apps/api и apps/worker (§ 3). ' +
+        'Исключение — tools/check-urls: docs/00-КОНТРАКТ.md § П-5 обязывает ' +
+        'проверку читать перечень исключений из packages/db/url-allowlist.ts, ' +
+        'то есть требует того самого импорта, который запрещает § 3. ' +
+        'Противоречие между документами разрешено старшинством (00-КОНТРАКТ — ' +
+        'первый в перечне § 3, 03-АРХИТЕКТУРА — седьмой) и записано как В-12. ' +
+        'Исключение сделано настолько узким, насколько возможно: один каталог.',
+      from: {
+        pathNot: '^(packages/db|apps/api|apps/worker|tools/check-urls)/',
+      },
       to: { path: '^packages/db/' },
     },
   ],

@@ -22,7 +22,8 @@
     "test:api": "COES_SUITE=api vitest run --passWithNoTests",
     "test:e2e": "playwright test --project=e2e --pass-with-no-tests",
     "test:visual": "playwright test --project=visual --pass-with-no-tests",
-    "test:a11y": "playwright test --project=a11y --pass-with-no-tests"
+    "test:a11y": "playwright test --project=a11y --pass-with-no-tests",
+    "db:migrate": "tsx packages/db/migrate.ts"
   },
   "devDependencies": {
     "@coes/eslint-plugin": "workspace:*",
@@ -30,9 +31,11 @@
     "@playwright/test": "~1.49.1",
     "@types/estree": "^1.0.6",
     "@types/node": "^22.20.1",
+    "@types/pg": "^8.11.10",
     "@vitest/coverage-v8": "~2.1.9",
     "dependency-cruiser": "~16.10.4",
     "eslint": "^9.39.5",
+    "pg": "^8.13.1",
     "stylelint": "^16.26.1",
     "tsx": "^4.20.7",
     "typescript": "~5.7.3",
