@@ -1,0 +1,54 @@
+# Локальная среда исполнителя — docs/03-АРХИТЕКТУРА.md § 11.1.
+# Ни обратного прокси, ни сертификатов, ни доменного имени здесь нет и быть
+# не должно: localhost — доверенный контекст браузера.
+#
+# Пределы памяти — ЛОКАЛЬНЫЙ профиль (§ 7, «Локальный профиль»), не продуктовый.
+
+name: coes-local
+
+services:
+  db:
+    # PostgreSQL 17 + PostGIS 3.5 (§ 4). Сборка imresamu — многоплатформенная:
+    # один и тот же образ работает и на arm64 машины исполнителя, и на amd64
+    # сервера. Канонический postgis/postgis arm64 не собирает, и разные сборки
+    # в разных средах означали бы разные версии ICU, то есть разную сортировку.
+    image: imresamu/postgis:17-3.5
+    mem_limit: 2g
+    shm_size: 256m
+    environment:
+      POSTGRES_DB: coes
+      POSTGRES_USER: coes_owner
+      # Пароль локальной среды. База слушает только 127.0.0.1 и не содержит
+      # рабочих данных; на сервере пароль задаётся иначе (этап В).
+      POSTGRES_PASSWORD: coes_local
+      # Сопоставление задаётся миграцией (§ 4.4), а не параметром кластера:
+      # правила сортировки — часть схемы и обязаны переезжать вместе с ней.
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+    command:
+      - postgres
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - effective_cache_size=1536MB
+      - -c
+      - work_mem=8MB
+      - -c
+      - max_connections=50
+    volumes:
+      # Словарь замен для таджикских букв (§ 4.1) обязан лежать в каталоге
+      # tsearch_data базы: без него не создаётся ни словарь, ни конфигурация
+      # поиска, ни функция tj_norm.
+      - ../../packages/db/tsearch/tajik.rules:/usr/share/postgresql/17/tsearch_data/tajik.rules:ro
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coes_owner -d coes"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  db-data:
+    name: coes-local-db-data
