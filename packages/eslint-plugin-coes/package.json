@@ -1,0 +1,19 @@
+{
+  "name": "@coes/eslint-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "devDependencies": {
+    "@types/estree": "^1.0.6",
+    "@typescript-eslint/parser": "~8.19.0",
+    "eslint": "^9.39.5",
+    "vitest": "~2.1.9"
+  }
+}

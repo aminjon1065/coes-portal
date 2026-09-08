@@ -1,0 +1,43 @@
+{
+  "name": "coes-portal",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.0.0 <23"
+  },
+  "scripts": {
+    "verify": "pnpm run typecheck && pnpm run lint && pnpm run boundaries && pnpm run check:literals && pnpm run check:limits && pnpm run check:urls && pnpm run check:generated && pnpm run test:unit && pnpm run test:db && pnpm run test:api && pnpm run test:e2e && pnpm run test:visual && pnpm run check:deploy && pnpm run test:a11y",
+    "typecheck": "tsc --noEmit -p tsconfig.base.json",
+    "lint": "eslint . --max-warnings=0 && stylelint \"**/*.css\" --allow-empty-input --max-warnings=0",
+    "boundaries": "depcruise --config dependency-cruiser.config.cjs .",
+    "check:literals": "tsx tools/check-literals/index.ts",
+    "check:limits": "tsx tools/check-limits/index.ts",
+    "check:urls": "tsx tools/check-urls/index.ts",
+    "check:generated": "tsx tools/check-generated/index.ts",
+    "check:deploy": "tsx tools/check-deploy/index.ts",
+    "test:unit": "COES_SUITE=unit vitest run --coverage",
+    "test:db": "COES_SUITE=db vitest run --passWithNoTests",
+    "test:api": "COES_SUITE=api vitest run --passWithNoTests",
+    "test:e2e": "playwright test --project=e2e --pass-with-no-tests",
+    "test:visual": "playwright test --project=visual --pass-with-no-tests",
+    "test:a11y": "playwright test --project=a11y --pass-with-no-tests"
+  },
+  "devDependencies": {
+    "@coes/eslint-plugin": "workspace:*",
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "~1.49.1",
+    "@types/estree": "^1.0.6",
+    "@types/node": "^22.20.1",
+    "@vitest/coverage-v8": "~2.1.9",
+    "dependency-cruiser": "~16.10.4",
+    "eslint": "^9.39.5",
+    "stylelint": "^16.26.1",
+    "tsx": "^4.20.7",
+    "typescript": "~5.7.3",
+    "typescript-eslint": "~8.19.0",
+    "vitest": "~2.1.9",
+    "yaml": "^2.8.1"
+  }
+}
