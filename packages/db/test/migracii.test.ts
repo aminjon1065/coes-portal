@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createTempDatabase, type TempDatabase } from './vremennaya-baza.ts';
-import { migrate } from '../migrate.ts';
+import { migrate, MIGRATIONS_DIR } from '../migrate.ts';
+import { readMigrations } from '../migrations.ts';
 
 /** Барьер § 10: миграции с нуля на свежей базе. */
 describe('миграции на свежей базе', () => {
@@ -8,11 +9,15 @@ describe('миграции на свежей базе', () => {
   beforeAll(async () => { db = await createTempDatabase('migracii'); }, 60_000);
   afterAll(async () => { await db.drop(); });
 
-  it('создают учётную таблицу и записывают применённое', async () => {
+  it('записывают применённое: в базе ровно то, что лежит в каталоге', async () => {
+    // Сверка с каталогом, а не с жёстким списком: иначе проверка устаревала бы
+    // при каждой новой миграции и её правили бы механически, не думая.
+    const files = readMigrations(MIGRATIONS_DIR);
     const { rows } = await db.client.query<{ version: number; name: string }>(
       'SELECT version, name FROM sys.migration ORDER BY version',
     );
-    expect(rows).toEqual([{ version: 1, name: 'osnovanie' }]);
+    expect(rows).toEqual(files.map((m) => ({ version: m.version, name: m.name })));
+    expect(rows.length).toBeGreaterThan(0);
   });
 
   it('повторный запуск ничего не применяет', async () => {

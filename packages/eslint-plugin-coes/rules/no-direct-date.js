@@ -18,7 +18,14 @@ export default {
     return {
       /** @param {import('estree').NewExpression} node */
       NewExpression(node) {
-        if (node.callee.type === 'Identifier' && node.callee.name === 'Date') {
+        // Часы читает только `new Date()` без аргументов. `new Date(строка)`
+        // и `new Date(число)` — разбор заданного момента: он воспроизводим и
+        // § 5.2 его не запрещает, там сказано «прямой вызов new Date()».
+        if (
+          node.callee.type === 'Identifier' &&
+          node.callee.name === 'Date' &&
+          node.arguments.length === 0
+        ) {
           context.report({ node, messageId: 'direct', data: { call: 'new Date()' } });
         }
       },
