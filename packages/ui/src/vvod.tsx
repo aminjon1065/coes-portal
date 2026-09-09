@@ -17,7 +17,7 @@ export type FieldState = 'normal' | 'error' | 'disabled' | 'readonly';
  * элемент ввода без подписи, а забытый идентификатор — ровно такой случай.
  * Поэтому идентификатор рождается в поле и доходит до элемента сам.
  */
-const FieldIdContext = createContext<string | undefined>(undefined);
+export const FieldIdContext = createContext<string | undefined>(undefined);
 
 export interface FieldProps {
   /** «подпись» — обязательна: поле без подписи запрещено (§ 7.1). */

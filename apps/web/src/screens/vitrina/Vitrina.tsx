@@ -11,6 +11,7 @@ import {
   Table, DescriptionList, MetricTile, Avatar, AuditFeed,
   Field, TextInput, TextArea, NumberInput, Checkbox, RadioGroup, Switch, Select,
   Dialog, ConfirmDialog, DiskSpaceIndicator, UnsupportedBrowser, Toasts,
+  DateInput, DateRangeInput, FileUpload,
   NETWORK_ERROR,
   type Column, type Row,
   type LifecycleStatus, type SeverityToken, type TextVariant, type ButtonKind,
@@ -325,6 +326,27 @@ export function Vitrina(): ReactNode {
               </Field>
             </Stack>
           </Grid>
+          <Grid columns={2}>
+            <Field label="Дата события" required hint="С клавиатуры или в календаре">
+              <DateInput value={new Date(2026, 8, 8)} onChange={() => undefined} />
+            </Field>
+            <Field label="Период отбора">
+              <DateRangeInput from={new Date(2026, 0, 1)} to={new Date(2026, 2, 31)} onChange={() => undefined} />
+            </Field>
+          </Grid>
+          <Field label="Вложения" hint="Не более 25 МБ на файл">
+            <FileUpload
+              files={[
+                { id: '1', name: 'Акт обследования.docx', size: 1348000, state: 'done' },
+                { id: '2', name: 'Снимок с места.jpg', size: 4210000, state: 'uploading', progress: 0.64 },
+                { id: '3', name: 'Схема участка.dwg', size: 88000000, state: 'error',
+                  error: 'Превышен размер файла: не более 25 МБ' },
+                { id: '4', name: 'Пояснительная записка.pdf', size: 240000, state: 'waiting' },
+              ]}
+              onPick={() => undefined}
+              onRemove={() => undefined}
+            />
+          </Field>
           <Stack direction="horizontal" gap="sp-6" wrap>
             <Stack gap="sp-2">
               <Checkbox label="Требует подтверждения получения" checked onChange={() => undefined} />

@@ -51,3 +51,9 @@ export type {
   CheckboxProps, RadioOption, RadioGroupProps, SwitchProps,
   SelectProps, SelectOption, SelectState,
 } from './vvod.tsx';
+
+export { DateInput, DateRangeInput, FileUpload, parseDate, presetRange, PERIOD_PRESETS } from './data.tsx';
+export type {
+  DateInputProps, DateRangeInputProps, PeriodPreset,
+  FileUploadProps, UploadedFile, UploadState,
+} from './data.tsx';

@@ -121,3 +121,66 @@
 .option:hover { background-color: var(--c-n-50); }
 .optionCurrent { background-color: var(--c-p-50); }
 .chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+
+/* § 7.5. Календарь. Неделя с понедельника, выходные цветом не выделяются:
+   у оперативной службы суббота — рабочий день. */
+.calendar {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 30;
+  margin-top: var(--sp-1);
+  padding: var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-3);
+  background-color: var(--c-surface);
+  box-shadow: var(--sh-2);
+}
+.calendarHead { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+.calendarGrid { display: grid; grid-template-columns: repeat(7, var(--h-hit)); gap: var(--sp-05); }
+.weekday { color: var(--c-n-600); font-size: var(--t-caption-size); line-height: var(--t-caption-line); text-align: center; }
+.day {
+  height: var(--h-hit);
+  border: 1px solid var(--c-transparent);
+  border-radius: var(--r-2);
+  background-color: var(--c-transparent);
+  color: var(--c-n-900);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.day:hover:not(:disabled) { background-color: var(--c-n-50); }
+.dayToday { border-color: var(--c-p-500); }
+.dayChosen { background-color: var(--c-p-500); color: var(--c-n-0); }
+.dayOther { color: var(--c-n-400); }
+.day:disabled { color: var(--c-n-400); cursor: not-allowed; }
+.dateWrap { position: relative; }
+
+/* § 7.6. Ввод периода: два поля и набор готовых периодов. */
+.range { display: flex; flex-direction: column; gap: var(--sp-2); }
+.rangeFields { display: flex; align-items: center; gap: var(--sp-2); }
+.presets { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+
+/* § 7.14. Загрузка файлов. */
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  height: var(--h-drop);
+  border: 1px dashed var(--c-border-strong);
+  border-radius: var(--r-3);
+  background-color: var(--c-n-25);
+  color: var(--c-n-600);
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+}
+.fileRow { display: flex; align-items: center; gap: var(--sp-2); padding-top: var(--sp-2); padding-bottom: var(--sp-2); border-bottom: 1px solid var(--c-border); }
+.fileName { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--c-n-900); font-size: var(--t-body-size); line-height: var(--t-body-line); }
+.fileSize { color: var(--c-n-600); font-size: var(--t-small-size); line-height: var(--t-small-line); font-variant-numeric: tabular-nums; }
+.fileError { color: var(--c-danger-600); font-size: var(--t-small-size); line-height: var(--t-small-line); }
+/* Единственное место, где допустим процент: это доля переданных байтов,
+   а не готовность работы (§ 7.14). */
+.progress { width: var(--w-progress); height: var(--sp-2); border-radius: var(--r-full); background-color: var(--c-n-100); overflow: hidden; }
+.progressFill { height: var(--sp-2); background-color: var(--c-p-500); }

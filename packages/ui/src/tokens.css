@@ -139,6 +139,8 @@
   --h-list-max: 320px;
   --h-option: 32px;
   --h-hit: 32px;
+  --h-drop: 96px;
+  --w-progress: 120px;
   --w-switch: 36px;
   --h-switch: 20px;
   --w-term: 200px;
