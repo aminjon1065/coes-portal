@@ -10,9 +10,13 @@
 BEGIN;
 
 -- Коды используются в шаблонах регистрационных номеров: {ПОДР} (§ 3.2).
+-- Центральный аппарат регионом верхнего уровня НЕ является: регионов пять
+-- (Д-06), и центральный аппарат в их число не входит. Таблица § 5.5 помечает
+-- его «да»; решение Держателя контракта от 2026-09-09 — «CA не регион»,
+-- запись В-14.
 INSERT INTO org.org_unit (id, code, name, short_name, parent_id, path, kind, is_region_root)
 VALUES (gen_random_uuid(), 'CA', 'Центральный аппарат Комитета', 'Центральный аппарат',
-        NULL, 'placeholder'::ltree, 'central', true)
+        NULL, 'placeholder'::ltree, 'central', false)
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO org.org_unit (id, code, name, short_name, parent_id, path, kind, is_region_root)
