@@ -24,7 +24,8 @@
     "test:visual": "playwright test --project=visual --pass-with-no-tests",
     "test:a11y": "playwright test --project=a11y --pass-with-no-tests",
     "db:migrate": "tsx packages/db/migrate.ts",
-    "audit:verify": "tsx tools/audit-verify/index.ts"
+    "audit:verify": "tsx tools/audit-verify/index.ts",
+    "db:seed": "tsx packages/db/seed.ts"
   },
   "devDependencies": {
     "@coes/eslint-plugin": "workspace:*",
