@@ -8,7 +8,7 @@ import type { Result } from 'axe-core';
  * проверяется здесь же: палитра § 2 выбиралась под это требование.
  */
 test('витрина не содержит нарушений доступности', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/__ui');
   await page.evaluate(() => document.fonts.ready);
 
   const { violations } = await new AxeBuilder({ page }).analyze();

@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  * допускается только вместе с изменением документа.
  */
 test('витрина компонентов совпадает с эталоном', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/__ui');
   // Шрифт обязан загрузиться до снимка: иначе сравнивается не то оформление.
   await page.evaluate(() => document.fonts.ready);
   await expect(page.getByRole('heading', { name: 'Витрина компонентов' })).toBeVisible();

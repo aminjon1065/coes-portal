@@ -12,6 +12,10 @@ const BASE_URL = `http://127.0.0.1:${WEB_PORT}`;
  */
 export default defineConfig({
   testDir: 'apps/web/e2e',
+  // Дерево § 2 docs/03-АРХИТЕКТУРА.md называет каталог эталонов поимённо:
+  // apps/web/e2e/__snapshots__/. Умолчание Playwright кладёт их рядом со
+  // спецификацией, а создание каталогов вне дерева запрещено.
+  snapshotPathTemplate: '{testDir}/__snapshots__/{arg}-{platform}{ext}',
   // Веб-приложение поднимается самой проверкой: сценарий обязан выполняться
   // из пустого состояния, а не на заранее запущенном сервере.
   webServer: {
