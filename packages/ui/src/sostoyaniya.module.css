@@ -1,0 +1,43 @@
+/* Обратная связь — docs/07-КОМПОНЕНТЫ.md § 9, состояния — 06 § 10. */
+.skeleton {
+  height: var(--h-row-compact);
+  background-color: var(--c-n-100);
+  border-radius: var(--r-2);
+  animation: pulse 1200ms ease-in-out infinite;
+}
+/* Ширина приходит классом из замкнутого набора: атрибут style запрещён
+   (06 § 13 п. 11), а произвольная ширина позволила бы «прямоугольник во
+   весь экран», который § 9.1 запрещает отдельно. */
+.skeletonFull { width: 100%; }
+.skeletonShort { width: 60%; }
+@keyframes pulse { 50% { opacity: 0.55; } }
+
+.spin { animation: rotate 800ms linear infinite; color: var(--c-n-500); }
+@keyframes rotate { to { transform: rotate(360deg); } }
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-top: var(--sp-12);
+  padding-bottom: var(--sp-12);
+  text-align: center;
+}
+.stateIconMuted { color: var(--c-n-400); }
+.stateIconDanger { color: var(--c-danger-600); }
+.stateIconLock { color: var(--c-n-500); }
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-2);
+  border-left: var(--sp-1) solid var(--c-transparent);
+}
+.bannerInfo { background-color: var(--c-p-50); border-left-color: var(--c-p-500); color: var(--c-p-500); }
+.bannerWarning { background-color: var(--c-warning-50); border-left-color: var(--c-warning-600); color: var(--c-warning-600); }
+.bannerDanger { background-color: var(--c-danger-50); border-left-color: var(--c-danger-600); color: var(--c-danger-600); }
+.bannerSuccess { background-color: var(--c-success-50); border-left-color: var(--c-success-600); color: var(--c-success-600); }
+.bannerBody { color: var(--c-n-900); }

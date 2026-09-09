@@ -1,5 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
+const WEB_PORT = Number(process.env['WEB_PORT'] ?? 8080);
+const BASE_URL = `http://127.0.0.1:${WEB_PORT}`;
+
 /**
  * Три набора — три шага pnpm verify (docs/03-АРХИТЕКТУРА.md § 10).
  * Шаблоны не пересекаются:
@@ -9,6 +12,17 @@ import { defineConfig } from '@playwright/test';
  */
 export default defineConfig({
   testDir: 'apps/web/e2e',
+  // Веб-приложение поднимается самой проверкой: сценарий обязан выполняться
+  // из пустого состояния, а не на заранее запущенном сервере.
+  webServer: {
+    command: 'pnpm exec vite --config apps/web/vite.config.ts',
+    url: BASE_URL,
+    // Переиспользовать чужой сервер нельзя: проверка молча тестировала бы
+    // постороннее приложение и сообщала бы о ЕГО нарушениях как о наших.
+    reuseExistingServer: false,
+    timeout: 60_000,
+  },
+  use: { baseURL: BASE_URL },
   forbidOnly: true,
   reporter: [['list']],
   expect: {

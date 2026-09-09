@@ -1,0 +1,22 @@
+/* Типографика — docs/06-ДИЗАЙН-СИСТЕМА.md § 3. Размер вне шкалы запрещён.
+   Курсив не используется нигде. */
+.base { margin: var(--sp-0); font-family: var(--font-sans); }
+.caption { font-size: var(--t-caption-size); line-height: var(--t-caption-line); font-weight: 500; letter-spacing: 0.02em; }
+.small { font-size: var(--t-small-size); line-height: var(--t-small-line); font-weight: 400; }
+.body { font-size: var(--t-body-size); line-height: var(--t-body-line); font-weight: 400; }
+.bodyStrong { font-size: var(--t-body-size); line-height: var(--t-body-line); font-weight: 600; }
+.lead { font-size: var(--t-lead-size); line-height: var(--t-lead-line); font-weight: 400; }
+.h4 { font-size: var(--t-h4-size); line-height: var(--t-h4-line); font-weight: 600; }
+.h3 { font-size: var(--t-h3-size); line-height: var(--t-h3-line); font-weight: 600; letter-spacing: -0.005em; }
+.h2 { font-size: var(--t-h2-size); line-height: var(--t-h2-line); font-weight: 600; letter-spacing: -0.01em; }
+.h1 { font-size: var(--t-h1-size); line-height: var(--t-h1-line); font-weight: 700; letter-spacing: -0.01em; }
+
+.primary { color: var(--c-n-900); }
+.secondary { color: var(--c-n-600); }
+.disabled { color: var(--c-n-400); }
+.danger { color: var(--c-danger-600); }
+
+/* § 3.3. Без моноширинных цифр столбцы чисел «пляшут». */
+.numeric { font-variant-numeric: tabular-nums; }
+/* § 3.4. Текстовый блок не шире 90 знаков. */
+.measure { max-width: 90ch; }

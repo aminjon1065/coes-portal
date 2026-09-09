@@ -1,0 +1,161 @@
+/*
+ * Токены дизайн-системы — docs/06-ДИЗАЙН-СИСТЕМА.md.
+ * Единственное место, где цвета, размеры и отступы заданы литералами:
+ * везде ещё допустимо только var(--…), и это держит stylelint (§ 15).
+ *
+ * Тема одна — светлая (§ 1, п. 3). Тёмной нет и не планируется.
+ */
+:root {
+  /* § 2.1. Нейтральные */
+  --c-n-0: #FFFFFF;
+  --c-n-25: #FAFBFC;
+  --c-n-50: #F4F6F8;
+  --c-n-100: #E9ECF0;
+  --c-n-200: #D8DDE4;
+  --c-n-300: #BFC7D1;
+  --c-n-400: #98A3B2;
+  --c-n-500: #78859A;
+  --c-n-600: #5B6879;
+  --c-n-700: #44505F;
+  --c-n-800: #2E3846;
+  --c-n-900: #1B222C;
+
+  /* § 2.2. Основной */
+  --c-p-50: #EDF3FB;
+  --c-p-100: #D4E2F6;
+  --c-p-200: #A9C5ED;
+  --c-p-300: #7BA4E1;
+  --c-p-400: #4680CE;
+  --c-p-500: #1F5AAE;
+  --c-p-600: #17478C;
+  --c-p-700: #11376C;
+  --c-p-800: #0C284F;
+
+  /* § 2.3. Семантические */
+  --c-success-600: #17703F;
+  --c-success-50: #E8F5ED;
+  --c-warning-600: #8A5300;
+  --c-warning-50: #FBF1E0;
+  --c-danger-600: #A3231A;
+  --c-danger-50: #FBEAE8;
+
+  /* § 2.4. Шкала важности. Пять уровней, произвольного цвета не бывает. */
+  --c-sev-1: #17703F;
+  --c-sev-1-bg: #E8F5ED;
+  --c-sev-2: #7A6100;
+  --c-sev-2-bg: #F8F2DC;
+  --c-sev-3: #A85A12;
+  --c-sev-3-bg: #FBEEE2;
+  --c-sev-4: #A3231A;
+  --c-sev-4-bg: #FBEAE8;
+  --c-sev-5: #6E1410;
+  --c-sev-5-bg: #F4E0DE;
+
+  /* § 2.5. Служебные */
+  --c-bg-app: var(--c-n-50);
+  --c-surface: var(--c-n-0);
+  --c-border: var(--c-n-200);
+  --c-border-strong: var(--c-n-300);
+  --c-overlay: rgba(27, 34, 44, 0.45);
+  /* Отсутствие цвета — тоже значение, и оно обязано быть токеном: иначе
+     литерал transparent пришлось бы разрешать правилу stylelint. */
+  --c-transparent: transparent;
+  --c-focus: var(--c-p-500);
+
+  /* § 3.1. Шрифт. Внешние шрифты запрещены. */
+  --font-sans: "Noto Sans", "Segoe UI", Arial, sans-serif;
+  --font-mono: "Noto Sans Mono", Consolas, "Courier New", monospace;
+
+  /* § 3.2. Шкала. Размер вне шкалы запрещён. */
+  --t-caption-size: 11px;
+  --t-caption-line: 16px;
+  --t-small-size: 12px;
+  --t-small-line: 18px;
+  --t-body-size: 14px;
+  --t-body-line: 20px;
+  --t-lead-size: 16px;
+  --t-lead-line: 24px;
+  --t-h4-size: 16px;
+  --t-h4-line: 22px;
+  --t-h3-size: 18px;
+  --t-h3-line: 26px;
+  --t-h2-size: 20px;
+  --t-h2-line: 28px;
+  --t-h1-size: 24px;
+  --t-h1-line: 32px;
+  --t-metric-size: 30px;
+  --t-metric-line: 34px;
+
+  /* § 4.1. Базовая единица 4 px. Отступ вне шкалы запрещён. */
+  /* Ноль в шкале нужен, чтобы сбрасывать отступы браузера по умолчанию,
+     не выходя за токены. */
+  --sp-0: 0;
+  --sp-05: 2px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* § 4.5. Скругления */
+  --r-1: 2px;
+  --r-2: 4px;
+  --r-3: 6px;
+  --r-4: 8px;
+  --r-full: 999px;
+
+  /* § 4.6. Тени — ровно три. Четвёртой не существует. */
+  --sh-1: 0 1px 2px rgba(27, 34, 44, 0.06), 0 1px 1px rgba(27, 34, 44, 0.04);
+  --sh-2: 0 4px 12px rgba(27, 34, 44, 0.1), 0 1px 3px rgba(27, 34, 44, 0.06);
+  --sh-3: 0 12px 32px rgba(27, 34, 44, 0.16), 0 2px 8px rgba(27, 34, 44, 0.08);
+
+  /* § 5. Движение. Длиннее 240 мс запрещено. */
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 240ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* § 6. Плотность */
+  --h-button-s: 28px;
+  --h-button-m: 34px;
+  --h-button-l: 40px;
+  --h-input: 34px;
+  --h-row-compact: 36px;
+  --h-row-normal: 44px;
+  --h-header: 52px;
+  --w-sidenav: 248px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 0ms;
+    --dur-2: 0ms;
+    --dur-3: 0ms;
+  }
+}
+
+/* Основание страницы. Форматы чисел — § 8: моноширинные цифры обязательны
+   в таблицах, плитках и полях чисел. */
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg-app);
+  color: var(--c-n-900);
+  font-family: var(--font-sans);
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+}
+
+/* § 12. Фокус виден всегда. Убирать outline запрещено. */
+:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}

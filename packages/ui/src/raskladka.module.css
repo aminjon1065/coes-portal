@@ -1,0 +1,62 @@
+/* Раскладка — docs/07-КОМПОНЕНТЫ.md § 4. Компонент никогда не задаёт себе
+   внешние отступы: расстояние между компонентами задаёт Stack или Grid. */
+.stack { display: flex; }
+.vertical { flex-direction: column; }
+.horizontal { flex-direction: row; }
+.wrap { flex-wrap: wrap; }
+.alignStart { align-items: flex-start; }
+.alignCenter { align-items: center; }
+.alignEnd { align-items: flex-end; }
+.alignStretch { align-items: stretch; }
+.justifyStart { justify-content: flex-start; }
+.justifyCenter { justify-content: center; }
+.justifyEnd { justify-content: flex-end; }
+.justifyBetween { justify-content: space-between; }
+
+.grid { display: grid; gap: var(--sp-4); }
+
+/* «отступ» и «колонок» приходят классом, а не атрибутом style:
+   06 § 13 п. 11 запрещает style в разметке. Набор классов замкнут,
+   поэтому значение вне шкалы § 4.1 передать нельзя. */
+.gapSp05 { gap: var(--sp-05); }
+.gapSp1 { gap: var(--sp-1); }
+.gapSp2 { gap: var(--sp-2); }
+.gapSp3 { gap: var(--sp-3); }
+.gapSp4 { gap: var(--sp-4); }
+.gapSp5 { gap: var(--sp-5); }
+.gapSp6 { gap: var(--sp-6); }
+.gapSp8 { gap: var(--sp-8); }
+.gapSp10 { gap: var(--sp-10); }
+.gapSp12 { gap: var(--sp-12); }
+.gapSp16 { gap: var(--sp-16); }
+.cols1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.cols2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cols3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cols4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cols6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.cols12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+
+
+.panel {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-3);
+  box-shadow: var(--sh-1);
+}
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-6);
+  border-bottom: 1px solid var(--c-border);
+}
+.panelBody { padding: var(--sp-6); }
+.panelBodyTight { padding: var(--sp-4); }
+.panelBodyNone { padding: var(--sp-05); }
+
+.section { display: flex; flex-direction: column; gap: var(--sp-3); }
+.sectionTitle { padding-bottom: var(--sp-3); border-bottom: 1px solid var(--c-border); }
+
+.dividerH { border: 0; border-top: 1px solid var(--c-border); width: 100%; }
+.dividerV { border: 0; border-left: 1px solid var(--c-border); align-self: stretch; }

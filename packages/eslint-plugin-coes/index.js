@@ -3,6 +3,7 @@ import moduleBoundaries from './rules/module-boundaries.js';
 import noDirectDate from './rules/no-direct-date.js';
 import requireScope from './rules/require-scope.js';
 import noRawHttpClient from './rules/no-raw-http-client.js';
+import noStyleAttribute from './rules/no-style-attribute.js';
 
 /**
  * Правила, которыми обеспечиваются принципы контракта:
@@ -11,6 +12,7 @@ import noRawHttpClient from './rules/no-raw-http-client.js';
  *   no-direct-date     — docs/03-АРХИТЕКТУРА.md § 5.2
  *   require-scope      — docs/05-ДОСТУП.md § 4.5
  *   no-raw-http-client — docs/09-API.md § 9
+ *   no-style-attribute — docs/06-ДИЗАЙН-СИСТЕМА.md § 13 п. 11
  */
 const plugin = {
   meta: { name: '@coes/eslint-plugin', version: '0.0.0' },
@@ -20,6 +22,7 @@ const plugin = {
     'no-direct-date': noDirectDate,
     'require-scope': requireScope,
     'no-raw-http-client': noRawHttpClient,
+    'no-style-attribute': noStyleAttribute,
   },
 };
 

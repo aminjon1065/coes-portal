@@ -33,8 +33,11 @@ const TOKEN_ONLY = [
 export default {
   rules: {
     'declaration-no-important': true,
+    // Каждое значение обязано быть токеном. Сокращённая запись из токенов
+    // (padding: var(--sp-3) var(--sp-6)) правилу удовлетворяет: литералов
+    // в ней нет. Одиночный литерал по-прежнему не проходит.
     'declaration-property-value-allowed-list': Object.fromEntries(
-      TOKEN_ONLY.map((property) => [property, [/^var\(--[a-z0-9-]+\)$/]]),
+      TOKEN_ONLY.map((property) => [property, [/^var\(--[a-z0-9-]+\)(\s+var\(--[a-z0-9-]+\)){0,3}$/]]),
     ),
   },
   overrides: [

@@ -84,6 +84,12 @@ export default tseslint.config(
     rules: { 'coes/no-intrinsic-jsx': 'error' },
   },
   {
+    // 06 § 13 п. 11: атрибут style запрещён везде, включая библиотеку.
+    // Значение, заданное атрибутом style, минует stylelint.
+    files: ['apps/**/*.tsx', 'packages/**/*.tsx'],
+    rules: { 'coes/no-style-attribute': 'error' },
+  },
+  {
     // § 3: порядок и границы модулей.
     files: ['apps/api/src/modules/**/*.ts'],
     rules: { 'coes/module-boundaries': ['error', { order: MODULE_ORDER }] },

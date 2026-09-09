@@ -1,0 +1,44 @@
+/* Действия — docs/07-КОМПОНЕНТЫ.md § 8. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  border: 1px solid transparent;
+  border-radius: var(--r-2);
+  font-family: var(--font-sans);
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+}
+
+.sizeS { height: var(--h-button-s); padding-left: var(--sp-3); padding-right: var(--sp-3); }
+.sizeM { height: var(--h-button-m); padding-left: var(--sp-4); padding-right: var(--sp-4); }
+.sizeL { height: var(--h-button-l); padding-left: var(--sp-5); padding-right: var(--sp-5); }
+
+.primary { background-color: var(--c-p-500); color: var(--c-n-0); }
+.primary:hover:not(:disabled) { background-color: var(--c-p-400); }
+.primary:active:not(:disabled) { background-color: var(--c-p-600); }
+
+.normal { background-color: var(--c-n-0); color: var(--c-n-800); border-color: var(--c-border); }
+.normal:hover:not(:disabled) { background-color: var(--c-n-50); border-color: var(--c-border-strong); }
+
+.quiet { background-color: var(--c-transparent); color: var(--c-n-700); }
+.quiet:hover:not(:disabled) { background-color: var(--c-n-100); }
+
+.danger { background-color: var(--c-n-0); color: var(--c-danger-600); border-color: var(--c-danger-600); }
+.danger:hover:not(:disabled) { background-color: var(--c-danger-50); }
+
+/* § 8.1. Отключённое состояние обязано объяснять причину подсказкой. */
+.button:disabled { background-color: var(--c-n-50); color: var(--c-n-400); border-color: var(--c-border); cursor: not-allowed; }
+
+/* Кнопка, запускающая изменение, обязана блокироваться до ответа: иначе
+   двойное нажатие создаст две записи (§ 8.1). */
+.busy { cursor: progress; }
+.spin { animation: rotate 800ms linear infinite; }
+@keyframes rotate { to { transform: rotate(360deg); } }
+
+.icon { width: var(--h-button-m); height: var(--h-button-m); padding-left: var(--sp-05); padding-right: var(--sp-05); }
+.iconS { width: var(--h-button-s); height: var(--h-button-s); }

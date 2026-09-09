@@ -1,0 +1,81 @@
+/* Отображение данных — docs/07-КОМПОНЕНТЫ.md § 6. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: var(--sp-5);
+  padding-left: var(--sp-2);
+  padding-right: var(--sp-2);
+  border-radius: var(--r-1);
+  font-size: var(--t-caption-size);
+  line-height: var(--t-caption-line);
+  font-weight: 500;
+}
+.tagNeutral { background-color: var(--c-n-100); color: var(--c-n-700); }
+.tagPrimary { background-color: var(--c-p-50); color: var(--c-p-500); }
+.tagSuccess { background-color: var(--c-success-50); color: var(--c-success-600); }
+.tagWarning { background-color: var(--c-warning-50); color: var(--c-warning-600); }
+.tagDanger { background-color: var(--c-danger-50); color: var(--c-danger-600); }
+
+.status { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--t-small-size); line-height: var(--t-small-line); }
+.dot { width: var(--sp-2); height: var(--sp-2); border-radius: var(--r-full); }
+.struck { text-decoration: line-through; }
+
+.severity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding-left: var(--sp-2);
+  padding-right: var(--sp-2);
+  height: var(--sp-5);
+  border-radius: var(--r-1);
+  font-size: var(--t-caption-size);
+  line-height: var(--t-caption-line);
+  font-weight: 500;
+}
+
+.counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--sp-5);
+  height: var(--sp-5);
+  padding-left: var(--sp-1);
+  padding-right: var(--sp-1);
+  border-radius: var(--r-full);
+  background-color: var(--c-p-500);
+  color: var(--c-n-0);
+  font-size: var(--t-caption-size);
+  line-height: var(--t-caption-line);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Соответствие цвета состоянию задано в библиотеке, а не на экране (07 § 6.7).
+   Цвет приходит селектором по data-состоянию: атрибут style запрещён
+   (06 § 13 п. 11). */
+.dot[data-status='draft'] { background-color: var(--c-n-500); }
+.dot[data-status='registered'] { background-color: var(--c-p-500); }
+.dot[data-status='clarifying'] { background-color: var(--c-sev-3); }
+.dot[data-status='closed'] { background-color: var(--c-success-600); }
+.dot[data-status='cancelled'] { background-color: var(--c-n-400); }
+.dot[data-status='onApproval'] { background-color: var(--c-p-500); }
+.dot[data-status='approved'] { background-color: var(--c-success-600); }
+.dot[data-status='rejected'] { background-color: var(--c-danger-600); }
+.dot[data-status='toDestroy'] { background-color: var(--c-danger-600); }
+.dot[data-status='destroyed'] { background-color: var(--c-n-400); }
+.dot[data-status='permanent'] { background-color: var(--c-n-700); }
+
+/* Знак важности (07 § 6.8): фон — фоновый токен уровня, текст — текстовый.
+   ОТСТУПЛЕНИЕ ДЛЯ sev-3 — ВОПРОСЫ.md В-17. Пара «#A85A12 на #FBEEE2» даёт
+   4,46:1 при пороге 4,5:1 из 06 § 12. По 00-КОНТРАКТ § 3 документ 06 старше
+   документа 07, поэтому действует порог, а не предписание о паре. Фоном
+   берётся белый — то самое сочетание, которое 06 § 2.4 удостоверяет
+   («проверены на контраст с белым фоном»): #A85A12 на белом даёт 5,08:1.
+   Плашки у sev-3 при этом нет — это видимое следствие дефекта комплекта,
+   а не оформительское решение. */
+.severity[data-level='sev-1'] { background-color: var(--c-sev-1-bg); color: var(--c-sev-1); }
+.severity[data-level='sev-2'] { background-color: var(--c-sev-2-bg); color: var(--c-sev-2); }
+.severity[data-level='sev-3'] { background-color: var(--c-n-0); color: var(--c-sev-3); }
+.severity[data-level='sev-4'] { background-color: var(--c-sev-4-bg); color: var(--c-sev-4); }
+.severity[data-level='sev-5'] { background-color: var(--c-sev-5-bg); color: var(--c-sev-5); }

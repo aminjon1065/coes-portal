@@ -1,0 +1,14 @@
+{
+  "name": "@coes/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@coes/ui": "workspace:*",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "vite": "^6.0.7"
+  }
+}
