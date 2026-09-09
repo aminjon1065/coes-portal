@@ -1,0 +1,11 @@
+{
+  "name": "@coes/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "pg": "^8.13.1",
+    "vitest": "~2.1.9"
+  }
+}

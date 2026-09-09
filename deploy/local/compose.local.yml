@@ -7,7 +7,20 @@
 name: coes-local
 
 services:
+  # Тому резервных копий нужен владелец: свежий том Docker создаётся от root,
+  # а архивировать журнал транзакций будет PostgreSQL от своего пользователя.
+  backup-init:
+    image: imresamu/postgis:17-3.5
+    user: root
+    command: sh -c "mkdir -p /backup/wal /backup/base && chown -R postgres:postgres /backup"
+    volumes:
+      - backup-data:/backup
+    restart: "no"
+
   db:
+    depends_on:
+      backup-init:
+        condition: service_completed_successfully
     # PostgreSQL 17 + PostGIS 3.5 (§ 4). Сборка imresamu — многоплатформенная:
     # один и тот же образ работает и на arm64 машины исполнителя, и на amd64
     # сервера. Канонический postgis/postgis arm64 не собирает, и разные сборки
@@ -37,12 +50,26 @@ services:
       - work_mem=8MB
       - -c
       - max_connections=50
+      # Непрерывная архивация журнала транзакций на том, ОТДЕЛЬНЫЙ от тома
+      # базы (docs/03-АРХИТЕКТУРА.md § 9): потеря при аппаратном отказе — не
+      # более archive_timeout.
+      - -c
+      - wal_level=replica
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=test ! -f /backup/wal/%f && cp %p /backup/wal/%f
+      # Контракт требует потери не более 15 минут. Локально порог жёстче:
+      # так проверка восстановления укладывается в минуту, а не в четверть часа.
+      - -c
+      - archive_timeout=30
     volumes:
       # Словарь замен для таджикских букв (§ 4.1) обязан лежать в каталоге
       # tsearch_data базы: без него не создаётся ни словарь, ни конфигурация
       # поиска, ни функция tj_norm.
       - ../../packages/db/tsearch/tajik.rules:/usr/share/postgresql/17/tsearch_data/tajik.rules:ro
       - db-data:/var/lib/postgresql/data
+      - backup-data:/backup
     ports:
       - "127.0.0.1:5432:5432"
     healthcheck:
@@ -55,3 +82,6 @@ services:
 volumes:
   db-data:
     name: coes-local-db-data
+  # Отдельный том: копия на том же диске, что и база, копией не является.
+  backup-data:
+    name: coes-local-backup
