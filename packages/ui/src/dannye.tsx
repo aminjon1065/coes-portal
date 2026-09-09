@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { ArrowDown, ArrowUp, Lock } from 'lucide-react';
+import { ArrowDown, ArrowUp, Lock, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import styles from './dannye.module.css';
 import { DASH, formatDateTimeSeconds, formatInteger } from './formaty.ts';
@@ -12,6 +12,10 @@ export type TagTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger';
 export interface TagProps {
   readonly children: ReactNode;
   readonly tone?: TagTone;
+  /** Крестик для снятия условия отбора (§ 6.6). */
+  readonly onRemove?: (() => void) | undefined;
+  /** Что именно снимает крестик: «Снять условие» без предмета бесполезно. */
+  readonly removeLabel?: string;
 }
 
 const TAG = {
@@ -19,8 +23,17 @@ const TAG = {
   warning: styles.tagWarning, danger: styles.tagDanger,
 };
 
-export function Tag({ children, tone = 'neutral' }: TagProps): ReactNode {
-  return <span className={[styles.tag, TAG[tone]].join(' ')}>{children}</span>;
+export function Tag({ children, tone = 'neutral', onRemove, removeLabel }: TagProps): ReactNode {
+  return (
+    <span className={[styles.tag, TAG[tone]].join(' ')}>
+      {children}
+      {onRemove === undefined ? null : (
+        <button className={styles.tagRemove} type="button" aria-label={removeLabel ?? 'Снять'} onClick={onRemove}>
+          <X size={12} aria-hidden="true" />
+        </button>
+      )}
+    </span>
+  );
 }
 
 /**

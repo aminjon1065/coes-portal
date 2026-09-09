@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Plus, Pencil, Trash2, Printer, LayoutGrid, Map, Rows3, Bell, Home, Users, FileText } from 'lucide-react';
+import { Plus, Pencil, Trash2, Printer, LayoutGrid, Map, Rows3, Bell, Home, Users, FileText, Search } from 'lucide-react';
 import {
   Stack, Grid, Panel, Section, Divider,
   Text, Heading,
@@ -9,6 +9,7 @@ import {
   Toolbar, ButtonGroup, Menu,
   SideNav, TopBar, ConnectionIndicator, Breadcrumbs, Tabs, Pagination,
   Table, DescriptionList, MetricTile, Avatar, AuditFeed,
+  Field, TextInput, TextArea, NumberInput, Checkbox, RadioGroup, Switch, Select,
   NETWORK_ERROR,
   type Column, type Row,
   type LifecycleStatus, type SeverityToken, type TextVariant, type ButtonKind,
@@ -252,6 +253,97 @@ export function Vitrina(): ReactNode {
               </Stack>
             </Stack>
           </Grid>
+        </Stack>
+      </Panel>
+
+      <Panel title={<Heading level={3}>Ввод</Heading>}>
+        <Stack gap="sp-4">
+          <Text variant="small" tone="secondary">
+            Поля со звёздочкой обязательны. Элемент ввода без поля не применяется: иначе он остался бы без подписи.
+          </Text>
+          <Grid columns={3}>
+            <Field label="Наименование" required hint="Как в приказе">
+              <TextInput value="Согдийская область" onChange={() => undefined} clearable />
+            </Field>
+            <Field label="Координата" hint="Пример формата — 38,55980">
+              <TextInput value="" onChange={() => undefined} placeholder="38,55980" icon={<Search size={16} aria-hidden="true" />} />
+            </Field>
+            <Field label="Код" error="Такой код уже занят" state="error">
+              <TextInput value="SUG" onChange={() => undefined} state="error" />
+            </Field>
+            <Field label="Подразделение" state="disabled">
+              <TextInput value="Центральный аппарат" onChange={() => undefined} state="disabled" />
+            </Field>
+            <Field label="Зарегистрировал" state="readonly" readonlyValue="Раҳимов Далер Саидович" />
+            <Field label="Единица">
+              <TextInput value="12" onChange={() => undefined} suffix="чел." />
+            </Field>
+          </Grid>
+          <Grid columns={3}>
+            <Field label="Погибло" hint="Пусто — сведений нет, ноль — погибших нет">
+              <NumberInput value={0} onChange={() => undefined} unit="чел." />
+            </Field>
+            <Field label="Пострадало">
+              <NumberInput value={1234567} onChange={() => undefined} />
+            </Field>
+            <Field label="Доля">
+              <NumberInput value={140} onChange={() => undefined} min={0} max={100} decimals={1} unit="%" />
+            </Field>
+          </Grid>
+          <Grid columns={2}>
+            <Field label="Описание" hint="Не более 200 знаков">
+              <TextArea
+                value={'Сель сошёл в 14:20 по местному времени. Перекрыта автодорога, движение остановлено.'}
+                onChange={() => undefined}
+                maxLength={100}
+              />
+            </Field>
+            <Stack gap="sp-3">
+              <Field label="Вид события" required>
+                <Select
+                  options={[
+                    { value: 'sel', label: 'Сель' },
+                    { value: 'pozhar', label: 'Пожар' },
+                    { value: 'zeml', label: 'Землетрясение', expired: true },
+                  ]}
+                  value={['zeml']}
+                  onChange={() => undefined}
+                />
+              </Field>
+              <Field label="Затронутые районы">
+                <Select
+                  options={[
+                    { value: 'a', label: 'Айнинский' },
+                    { value: 'b', label: 'Пенджикент' },
+                    { value: 'c', label: 'Истаравшан' },
+                  ]}
+                  value={['a', 'b']}
+                  onChange={() => undefined}
+                  multiple
+                />
+              </Field>
+            </Stack>
+          </Grid>
+          <Stack direction="horizontal" gap="sp-6" wrap>
+            <Stack gap="sp-2">
+              <Checkbox label="Требует подтверждения получения" checked onChange={() => undefined} />
+              <Checkbox label="Часть районов отмечена" checked={false} indeterminate onChange={() => undefined} />
+              <Checkbox label="Недоступно" checked={false} disabled onChange={() => undefined} />
+            </Stack>
+            <RadioGroup
+              options={[
+                { value: 'obl', label: 'Область' },
+                { value: 'ray', label: 'Район' },
+                { value: 'gor', label: 'Город' },
+              ]}
+              value="ray"
+              onChange={() => undefined}
+            />
+            <Stack gap="sp-2">
+              <Switch label="Показывать карту при открытии" checked onChange={() => undefined} />
+              <Switch label="Звук уведомлений" checked={false} onChange={() => undefined} />
+            </Stack>
+          </Stack>
         </Stack>
       </Panel>
 

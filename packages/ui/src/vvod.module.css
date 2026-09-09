@@ -1,0 +1,123 @@
+/* Ввод — docs/07-КОМПОНЕНТЫ.md § 7. */
+
+/* § 7.1. Поле. Элемент ввода без поля запрещён: иначе он остаётся без подписи. */
+.field { display: flex; flex-direction: column; gap: var(--sp-1); }
+.label { color: var(--c-n-700); font-size: var(--t-caption-size); line-height: var(--t-caption-line); font-weight: 500; }
+.required { color: var(--c-danger-600); }
+.hint { color: var(--c-n-600); font-size: var(--t-small-size); line-height: var(--t-small-line); }
+.error { color: var(--c-danger-600); font-size: var(--t-small-size); line-height: var(--t-small-line); }
+/* Только чтение показывает значение текстом, а не отключённым полем (§ 7.1). */
+.readonlyValue { color: var(--c-n-900); font-size: var(--t-body-size); line-height: var(--t-body-line); }
+
+/* § 7.2. Ввод текста. Отступ взят из шкалы § 4.1 — запись В-21. */
+.control {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--h-input);
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-2);
+  background-color: var(--c-n-0);
+  color: var(--c-n-900);
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+}
+.control:hover { border-color: var(--c-border-strong); }
+.controlError { border-color: var(--c-danger-600); }
+.controlDisabled { background-color: var(--c-n-50); color: var(--c-n-400); }
+.input { flex: 1; min-width: var(--sp-0); border: 0; background-color: var(--c-transparent); color: var(--c-n-900); font: inherit; }
+.input:focus { outline: none; }
+.control:focus-within { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.suffix { color: var(--c-n-600); font-size: var(--t-small-size); line-height: var(--t-small-line); }
+.icon { color: var(--c-n-500); }
+
+/* § 7.3. Многострочный текст: растёт до 320 px, дальше прокрутка. */
+.textarea {
+  min-height: var(--h-textarea-min);
+  max-height: var(--h-textarea-max);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-2);
+  background-color: var(--c-n-0);
+  color: var(--c-n-900);
+  font: inherit;
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+  resize: vertical;
+  overflow-y: auto;
+}
+.textarea:hover { border-color: var(--c-border-strong); }
+.counter { align-self: flex-end; color: var(--c-n-600); font-size: var(--t-small-size); line-height: var(--t-small-line); font-variant-numeric: tabular-nums; }
+
+/* § 7.4. Число: по правому краю, моноширинные цифры. */
+.number { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* § 7.11. Флажок: сам знак 16 px, область нажатия 32 px. */
+.checkbox { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--h-hit); cursor: pointer; }
+.checkboxBox { width: var(--sp-4); height: var(--sp-4); accent-color: var(--c-p-500); }
+.checkboxLabel { color: var(--c-n-900); font-size: var(--t-body-size); line-height: var(--t-body-line); }
+.checkboxDisabled { color: var(--c-n-400); cursor: not-allowed; }
+
+/* § 7.12. Радиогруппа: 2–5 вариантов, дальше Select. */
+.radioGroup { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+/* § 7.13. Переключатель — только для настроек, вступающих в силу сразу. */
+.switch { display: inline-flex; align-items: center; gap: var(--sp-2); cursor: pointer; }
+.switchTrack {
+  position: relative;
+  width: var(--w-switch);
+  height: var(--h-switch);
+  border-radius: var(--r-full);
+  background-color: var(--c-n-300);
+  transition: background-color var(--dur-1) var(--ease);
+}
+.switchOn { background-color: var(--c-p-500); }
+.switchKnob {
+  position: absolute;
+  top: var(--sp-05);
+  left: var(--sp-05);
+  width: var(--sp-4);
+  height: var(--sp-4);
+  border-radius: var(--r-full);
+  background-color: var(--c-n-0);
+  transition: transform var(--dur-1) var(--ease);
+}
+.switchOn > .switchKnob { transform: translateX(100%); }
+
+/* § 7.7. Выбор. Поиск появляется при числе элементов более десяти. */
+.select { position: relative; }
+.selectList {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: var(--h-list-max);
+  margin-top: var(--sp-1);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-2);
+  background-color: var(--c-surface);
+  box-shadow: var(--sh-2);
+  overflow-y: auto;
+  list-style: none;
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  height: var(--h-option);
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border: 0;
+  background-color: var(--c-transparent);
+  color: var(--c-n-900);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.option:hover { background-color: var(--c-n-50); }
+.optionCurrent { background-color: var(--c-p-50); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }

@@ -134,6 +134,13 @@
   --h-thead: 40px;
   --h-metric: 96px;
   --w-cell-max: 320px;
+  --h-textarea-min: 80px;
+  --h-textarea-max: 320px;
+  --h-list-max: 320px;
+  --h-option: 32px;
+  --h-hit: 32px;
+  --w-switch: 36px;
+  --h-switch: 20px;
   --w-term: 200px;
   --w-sidenav: 248px;
   --w-sidenav-collapsed: 56px;
