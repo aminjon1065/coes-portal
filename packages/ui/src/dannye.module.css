@@ -67,15 +67,10 @@
 .dot[data-status='permanent'] { background-color: var(--c-n-700); }
 
 /* Знак важности (07 § 6.8): фон — фоновый токен уровня, текст — текстовый.
-   ОТСТУПЛЕНИЕ ДЛЯ sev-3 — ВОПРОСЫ.md В-17. Пара «#A85A12 на #FBEEE2» даёт
-   4,46:1 при пороге 4,5:1 из 06 § 12. По 00-КОНТРАКТ § 3 документ 06 старше
-   документа 07, поэтому действует порог, а не предписание о паре. Фоном
-   берётся белый — то самое сочетание, которое 06 § 2.4 удостоверяет
-   («проверены на контраст с белым фоном»): #A85A12 на белом даёт 5,08:1.
-   Плашки у sev-3 при этом нет — это видимое следствие дефекта комплекта,
-   а не оформительское решение. */
+   Все пять пар проходят порог 06 § 12 (от 5,21 до 9,36). Отступление,
+   заведённое как В-17, снято: § 2.4 исправлен Держателем контракта. */
 .severity[data-level='sev-1'] { background-color: var(--c-sev-1-bg); color: var(--c-sev-1); }
 .severity[data-level='sev-2'] { background-color: var(--c-sev-2-bg); color: var(--c-sev-2); }
-.severity[data-level='sev-3'] { background-color: var(--c-n-0); color: var(--c-sev-3); }
+.severity[data-level='sev-3'] { background-color: var(--c-sev-3-bg); color: var(--c-sev-3); }
 .severity[data-level='sev-4'] { background-color: var(--c-sev-4-bg); color: var(--c-sev-4); }
 .severity[data-level='sev-5'] { background-color: var(--c-sev-5-bg); color: var(--c-sev-5); }
