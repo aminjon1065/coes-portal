@@ -8,7 +8,9 @@ import {
   Skeleton, Spinner, EmptyState, ErrorState, NoAccessState, Banner, RestrictedNotice, Tooltip,
   Toolbar, ButtonGroup, Menu,
   SideNav, TopBar, ConnectionIndicator, Breadcrumbs, Tabs, Pagination,
+  Table, DescriptionList, MetricTile, Avatar, AuditFeed,
   NETWORK_ERROR,
+  type Column, type Row,
   type LifecycleStatus, type SeverityToken, type TextVariant, type ButtonKind,
 } from '@coes/ui';
 
@@ -72,6 +74,36 @@ const DEISTVIYA_POLOSY = [
   { id: 'pechat', label: 'Печать', icon: <Printer size={16} aria-hidden="true" /> },
   { id: 'pravit', label: 'Изменить', icon: <Pencil size={16} aria-hidden="true" /> },
   { id: 'udalit', label: 'Аннулировать', icon: <Trash2 size={16} aria-hidden="true" />, danger: true },
+];
+
+const КОЛОНКИ: readonly Column[] = [
+  { key: 'nomer', title: 'Номер', kind: 'text', width: 140, required: true, sortable: true },
+  { key: 'vid', title: 'Вид', kind: 'text', required: true },
+  { key: 'vazhnost', title: 'Важность', kind: 'severity', required: true,
+    render: (row: Row) => <SeverityBadge level={row['vazhnost'] as SeverityToken} label={String(row['vazhnostLabel'])} /> },
+  { key: 'sostoyanie', title: 'Состояние', kind: 'status',
+    render: (row: Row) => <StatusBadge status={row['sostoyanie'] as LifecycleStatus} /> },
+  { key: 'pogiblo', title: 'Погибло', kind: 'number', width: 110 },
+  { key: 'postradalo', title: 'Пострадало', kind: 'number', width: 120 },
+  { key: 'zaregistrirovano', title: 'Зарегистрировано', kind: 'datetime', width: 180, sortable: true },
+];
+
+const СТРОКИ: readonly Row[] = [
+  { nomer: '2026-SUG-0001', vid: 'Сель', vazhnost: 'sev-3', vazhnostLabel: 'Районный',
+    sostoyanie: 'registered', pogiblo: 0, postradalo: 12, zaregistrirovano: '2026-09-08T14:35:00' },
+  { nomer: '2026-DUS-0017', vid: 'Пожар', vazhnost: 'sev-2', vazhnostLabel: 'Местный',
+    sostoyanie: 'clarifying', pogiblo: 2, postradalo: 8, zaregistrirovano: '2026-09-08T09:12:00' },
+  { nomer: '2026-KHA-0004', vid: 'Землетрясение', vazhnost: 'sev-5', vazhnostLabel: 'Республиканский',
+    sostoyanie: 'closed', pogiblo: null, postradalo: 1234567, zaregistrirovano: '2026-09-07T23:04:00' },
+];
+
+const ЗАПИСИ_ЖУРНАЛА = [
+  { id: '1', at: '2026-09-08T14:35:07', who: 'Раҳимов Д. С.', post: 'Оперативный дежурный',
+    action: 'Изменил сведения о пострадавших', change: 'Погибло: 2 → 3' },
+  { id: '2', at: '2026-09-08T14:31:52', who: 'Ғафуров Ӯ. Ҳ.', post: 'Специалист',
+    action: 'Зарегистрировал событие', substitution: 'замещает Начальника управления, приказ №12' },
+  { id: '3', at: '2026-09-08T14:20:03', who: 'Ҷумъаев Қ. М.', post: 'Оператор',
+    action: 'Изменены сведения о пострадавшем' },
 ];
 
 const НАЗНАЧЕНИЯ = [
@@ -219,6 +251,50 @@ export function Vitrina(): ReactNode {
                 </Tooltip>
               </Stack>
             </Stack>
+          </Grid>
+        </Stack>
+      </Panel>
+
+      <Panel title={<Heading level={3}>Отображение данных</Heading>}>
+        <Stack gap="sp-4">
+          <Table
+            caption="Реестр событий"
+            columns={КОЛОНКИ}
+            rows={СТРОКИ}
+            rowKey={(row: Row) => String(row['nomer'])}
+            sort={{ key: 'zaregistrirovano', direction: 'desc' }}
+            selectedKey="2026-DUS-0017"
+            pinnedColumns={1}
+          />
+          <Grid columns={4}>
+            <MetricTile caption="Открытых событий" value={17} change={3} goodDirection="down" href="#sob" />
+            <MetricTile caption="Погибло за сутки" value={2} unit="чел." change={1} goodDirection="down" />
+            <MetricTile caption="Пострадало" value={1234567} unit="чел." />
+            <MetricTile caption="Сведений нет" />
+          </Grid>
+          <Grid columns={2}>
+            <DescriptionList
+              items={[
+                { term: 'Фамилия, имя, отчество', value: 'Раҳимов Далер Саидович' },
+                { term: 'Должность', value: 'Оперативный дежурный' },
+                { term: 'Подразделение', value: 'Согдийская область' },
+                { term: 'Дата рождения', hidden: true },
+                { term: 'Служебный телефон' },
+                { term: 'Последний вход', loading: true },
+              ]}
+            />
+            <Stack gap="sp-3">
+              <Stack direction="horizontal" gap="sp-3" align="center">
+                <Avatar name="Раҳимов Далер" size="s" />
+                <Avatar name="Ғафуров Ӯктам" />
+                <Avatar name="Ҷумъаев Қосим" size="l" />
+              </Stack>
+              <AuditFeed entries={ЗАПИСИ_ЖУРНАЛА} />
+            </Stack>
+          </Grid>
+          <Grid columns={2}>
+            <Table caption="Загрузка" columns={КОЛОНКИ.slice(0, 3)} rows={[]} rowKey={() => ''} state="loading" />
+            <Table caption="Ничего не найдено" columns={КОЛОНКИ.slice(0, 3)} rows={[]} rowKey={() => ''} state="notFound" />
           </Grid>
         </Stack>
       </Panel>

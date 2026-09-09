@@ -1,5 +1,9 @@
+import { Fragment } from 'react';
+import { ArrowDown, ArrowUp, Lock } from 'lucide-react';
 import type { ReactNode } from 'react';
 import styles from './dannye.module.css';
+import { DASH, formatDateTimeSeconds, formatInteger } from './formaty.ts';
+import { Skeleton } from './sostoyaniya.tsx';
 
 /** Отображение данных — docs/07-КОМПОНЕНТЫ.md § 6. */
 
@@ -77,4 +81,129 @@ export interface CounterProps {
 export function Counter({ value }: CounterProps): ReactNode {
   if (value <= 0) return null;
   return <span className={styles.counter}>{value > 99 ? '99+' : String(value)}</span>;
+}
+
+export interface DescriptionItem {
+  readonly term: string;
+  readonly value?: ReactNode;
+  /** Значение скрыто по правам: об этом говорится прямо (§ 6.2). */
+  readonly hidden?: boolean;
+  readonly loading?: boolean;
+}
+
+/** Список описаний § 6.2: пары «подпись — значение» в карточке объекта. */
+export function DescriptionList({ items }: { readonly items: readonly DescriptionItem[] }): ReactNode {
+  return (
+    <dl className={styles.dl}>
+      {items.map((item) => (
+        <Fragment key={item.term}>
+          <dt className={styles.dt}>{item.term}</dt>
+          <dd className={styles.dd}>
+            {item.loading === true ? <Skeleton width="short" /> : null}
+            {item.loading !== true && item.hidden === true ? (
+              <span className={styles.ddHidden}>
+                <Lock size={16} aria-hidden="true" />
+                Нет доступа
+              </span>
+            ) : null}
+            {item.loading !== true && item.hidden !== true
+              ? (item.value === undefined || item.value === null || item.value === '' ? DASH : item.value)
+              : null}
+          </dd>
+        </Fragment>
+      ))}
+    </dl>
+  );
+}
+
+export interface MetricTileProps {
+  /** «подпись» */
+  readonly caption: string;
+  /** «значение». Отсутствие числа — знак тире, а не пустое место. */
+  readonly value?: number;
+  /** «единица» */
+  readonly unit?: string;
+  /** «изменение» относительно прошлого периода. */
+  readonly change?: number;
+  /**
+   * Куда считать изменение хорошим. Указывается явно и всегда: рост числа
+   * погибших не успех, и сам по себе зелёным быть не должен (§ 6.3).
+   */
+  readonly goodDirection?: 'up' | 'down' | 'none';
+  /** «переход» — адрес реестра с применёнными условиями отбора. */
+  readonly href?: string;
+  readonly loading?: boolean;
+}
+
+export function MetricTile({
+  caption, value, unit, change, goodDirection = 'none', href, loading = false,
+}: MetricTileProps): ReactNode {
+  const rising = change !== undefined && change > 0;
+  const tone = goodDirection === 'none' || change === undefined || change === 0
+    ? ''
+    : ((rising && goodDirection === 'up') || (!rising && goodDirection === 'down') ? styles.metricGood : styles.metricBad);
+  const body = (
+    <>
+      <span className={styles.metricCaption}>{caption}</span>
+      <span className={styles.metricValue}>
+        {loading ? <Skeleton width="short" /> : formatInteger(value)}
+        {unit === undefined ? null : <span className={styles.metricUnit}>{unit}</span>}
+      </span>
+      {change === undefined ? null : (
+        <span className={[styles.metricChange, tone].filter(Boolean).join(' ')}>
+          {rising ? <ArrowUp size={16} aria-hidden="true" /> : <ArrowDown size={16} aria-hidden="true" />}
+          {formatInteger(Math.abs(change))}
+        </span>
+      )}
+    </>
+  );
+  return href === undefined
+    ? <div className={styles.metric}>{body}</div>
+    : <a className={[styles.metric, styles.metricLink].join(' ')} href={href}>{body}</a>;
+}
+
+export interface AvatarProps {
+  readonly name: string;
+  readonly size?: 's' | 'm' | 'l';
+}
+
+/** Аватар § 6.9. Фон один для всех: случайная раскраска людей запрещена. */
+export function Avatar({ name, size = 'm' }: AvatarProps): ReactNode {
+  const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('');
+  const sized = size === 's' ? styles.avatarS : size === 'l' ? styles.avatarL : styles.avatarM;
+  return <span className={[styles.avatar, sized].join(' ')} aria-label={name} title={name}>{initials}</span>;
+}
+
+export interface AuditEntry {
+  readonly id: string;
+  readonly at: string;
+  readonly who: string;
+  readonly post: string;
+  readonly action: string;
+  /** «Погибло: 2 → 3». Для персональных данных без разрешения уровня 2 —
+      только сообщение об изменении, без значений (§ 6.11). */
+  readonly change?: string;
+  /** «(замещает <должность>, приказ №<номер>)» */
+  readonly substitution?: string;
+}
+
+/** Лента журнала § 6.11. Время — с секундами: журнал того требует (06 § 8). */
+export function AuditFeed({ entries }: { readonly entries: readonly AuditEntry[] }): ReactNode {
+  return (
+    <div className={styles.feed}>
+      {entries.map((entry) => (
+        <div className={styles.feedRow} key={entry.id}>
+          <span className={styles.feedWhen}>{formatDateTimeSeconds(entry.at)}</span>
+          <span className={styles.feedWho}>
+            {`${entry.who}, ${entry.post}`}
+            {entry.substitution === undefined ? '' : ` (${entry.substitution})`}
+          </span>
+          <span className={styles.feedWhat}>
+            {entry.action}
+            {entry.change === undefined ? '' : `. ${entry.change}`}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }

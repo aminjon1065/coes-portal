@@ -13,8 +13,11 @@ export type { TextProps, HeadingProps, TextVariant, TextTone } from './tipografi
 export { Button, IconButton, ButtonGroup, Menu } from './deistviya.tsx';
 export type { ButtonProps, IconButtonProps, ButtonKind, ButtonSize, ButtonGroupProps, MenuProps, MenuItem } from './deistviya.tsx';
 
-export { Tag, StatusBadge, SeverityBadge, Counter } from './dannye.tsx';
-export type { TagProps, TagTone, StatusBadgeProps, LifecycleStatus, SeverityBadgeProps, SeverityToken, CounterProps } from './dannye.tsx';
+export { Tag, StatusBadge, SeverityBadge, Counter, DescriptionList, MetricTile, Avatar, AuditFeed } from './dannye.tsx';
+export type {
+  TagProps, TagTone, StatusBadgeProps, LifecycleStatus, SeverityBadgeProps, SeverityToken, CounterProps,
+  DescriptionItem, MetricTileProps, AvatarProps, AuditEntry,
+} from './dannye.tsx';
 
 export { Skeleton, Spinner, EmptyState, ErrorState, NoAccessState, Banner, RestrictedNotice, Tooltip, NETWORK_ERROR } from './sostoyaniya.tsx';
 export type { SkeletonProps, SpinnerProps, EmptyStateProps, ErrorStateProps, NoAccessStateProps, BannerProps, BannerTone, TooltipProps } from './sostoyaniya.tsx';
@@ -24,3 +27,12 @@ export type {
   SideNavProps, NavSection, TopBarProps, PostContext, ConnectionIndicatorProps, ConnectionState,
   Crumb, TabsProps, TabItem, PaginationProps,
 } from './navigatsiya.tsx';
+
+export { Table } from './tablitsa.tsx';
+export type { TableProps, Column, ColumnKind, Row, TableState, SortOrder } from './tablitsa.tsx';
+
+export {
+  DASH, formatDate, formatDateTime, formatDateTimeSeconds, formatPeriod,
+  formatInteger, formatDecimal, formatPercent, formatMoney, formatFileSize,
+  formatDuration, formatDegrees,
+} from './formaty.ts';

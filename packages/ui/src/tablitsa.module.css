@@ -1,0 +1,99 @@
+/* Таблица — docs/07-КОМПОНЕНТЫ.md § 6.1. Главный компонент системы. */
+
+/* Прокрутка живёт внутри таблицы: горизонтальная прокрутка страницы
+   запрещена (06 § 13 п. 15). */
+.scroller { width: 100%; overflow-x: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--c-surface);
+}
+
+.head { height: var(--h-thead); background-color: var(--c-n-100); }
+.headCell {
+  height: var(--h-thead);
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border-bottom: 1px solid var(--c-border);
+  background-color: var(--c-n-100);
+  color: var(--c-n-700);
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  border: 0;
+  background-color: var(--c-transparent);
+  color: var(--c-n-700);
+  font: inherit;
+  cursor: pointer;
+}
+
+.row { height: var(--h-row-compact); }
+.rowNormal { height: var(--h-row-normal); }
+.row:nth-child(odd) > .cell { background-color: var(--c-n-25); }
+.row:nth-child(even) > .cell { background-color: var(--c-surface); }
+.rowClickable { cursor: pointer; }
+.rowClickable:hover > .cell { background-color: var(--c-p-50); }
+/* Выделение и отметка обязаны перебивать чередование строк: у правила
+   .row:nth-child(odd) > .cell специфичность выше, чем у одиночного класса,
+   и без второго класса подсветка была бы не видна. */
+.row.rowSelected > .cell { background-color: var(--c-p-50); }
+.row.rowChecked > .cell { background-color: var(--c-p-100); }
+
+.cell {
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-n-900);
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+  max-width: var(--w-cell-max);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Числовая колонка выравнивается по правому краю всегда (§ 6.1, 06 § 13 п. 23). */
+.number { text-align: right; font-variant-numeric: tabular-nums; }
+.center { text-align: center; }
+
+/* Закреплённые колонки. Смещение слева зависит от ширины предыдущих
+   колонок, то есть от данных, а не от дизайн-системы: его выставляет
+   раскладочный эффект компонента, разметка остаётся без атрибута style. */
+.pinned { position: sticky; z-index: 1; }
+/* Край закреплённой области отмечается усиленной границей, а не тенью:
+   теней в § 4.6 ровно три, четвёртую вводить нельзя (06 § 13 п. 5). */
+.pinnedEdge { border-right: 1px solid var(--c-border-strong); }
+
+.label { display: none; }
+
+/* Ниже --bp-sm таблица становится карточками: одна запись — одна карточка,
+   и только колонки с признаком обязательности (§ 6.1). */
+@media (max-width: 640px) {
+  .head { display: none; }
+  .table, .row, .cell { display: block; width: 100%; }
+  .row {
+    height: auto;
+    margin-bottom: var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-3);
+  }
+  .cell {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    max-width: none;
+    white-space: normal;
+  }
+  .optional { display: none; }
+  .label { display: inline; color: var(--c-n-600); font-size: var(--t-caption-size); }
+  .pinned { position: static; }
+}

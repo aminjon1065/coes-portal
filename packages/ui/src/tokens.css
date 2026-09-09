@@ -131,6 +131,10 @@
   --h-row-compact: 36px;
   --h-row-normal: 44px;
   --h-header: 52px;
+  --h-thead: 40px;
+  --h-metric: 96px;
+  --w-cell-max: 320px;
+  --w-term: 200px;
   --w-sidenav: 248px;
   --w-sidenav-collapsed: 56px;
   --h-toolbar: 48px;

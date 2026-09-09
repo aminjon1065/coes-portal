@@ -57,8 +57,11 @@ export function EmptyState({ kind, title, hint, action }: EmptyStateProps): Reac
 export interface ErrorStateProps {
   /** Текст из ответа сервера. Технические подробности не показываются. */
   readonly message: string;
-  readonly requestId?: string;
-  readonly onRetry?: () => void;
+  // Явное «| undefined» нужно при exactOptionalPropertyTypes: эти свойства
+  // передаются насквозь из компонентов, которые сами их получают как
+  // необязательные (например из таблицы § 6.1).
+  readonly requestId?: string | undefined;
+  readonly onRetry?: (() => void) | undefined;
 }
 
 /**
