@@ -1,10 +1,11 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { AlertCircle, Inbox, Loader2, Lock, SearchX, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { AlertCircle, Inbox, Loader2, Lock, SearchX, Info, CheckCircle2, AlertTriangle, X, MonitorX } from 'lucide-react';
 import styles from './sostoyaniya.module.css';
 import { Text, Heading } from './tipografika.tsx';
 import { Stack } from './raskladka.tsx';
-import { Button } from './deistviya.tsx';
+import { formatFileSize } from './formaty.ts';
+import { Button, IconButton } from './deistviya.tsx';
 
 /**
  * Обратная связь — docs/07-КОМПОНЕНТЫ.md § 9.
@@ -159,5 +160,217 @@ export function Tooltip({ children, text }: TooltipProps): ReactNode {
       <span aria-describedby={id}>{children}</span>
       <span className={styles.tooltip} id={id} role="tooltip">{text}</span>
     </span>
+  );
+}
+
+export interface ToastMessage {
+  readonly id: string;
+  readonly text: string;
+  readonly tone?: 'success' | 'info';
+}
+
+/** Одновременно не более трёх: более старые вытесняются (§ 9.7). */
+export const TOAST_LIMIT = 3;
+
+/** Живёт пять секунд (§ 9.7). */
+export const TOAST_LIFETIME_MS = 5000;
+
+export interface ToastsProps {
+  readonly messages: readonly ToastMessage[];
+  readonly onClose: (id: string) => void;
+}
+
+/**
+ * Всплывающие сообщения § 9.7. Только подтверждение выполненного действия
+ * и сведения, не требующие реакции: ошибка, требующая действия
+ * пользователя, показывается на месте, рядом с причиной (06 § 13 п. 17).
+ */
+export function Toasts({ messages, onClose }: ToastsProps): ReactNode {
+  const shown = messages.slice(-TOAST_LIMIT);
+  return (
+    <div className={styles.toasts} role="status" aria-live="polite">
+      {shown.map((message) => (
+        <div
+          className={[styles.toast, message.tone === 'success' ? styles.toastSuccess : ''].filter(Boolean).join(' ')}
+          key={message.id}
+        >
+          {message.tone === 'success'
+            ? <CheckCircle2 size={16} className={styles.stateIconSuccess} aria-hidden="true" />
+            : <Info size={16} className={styles.stateIconInfo} aria-hidden="true" />}
+          <Text variant="body">{message.text}</Text>
+          <Button kind="quiet" size="s" onClick={() => { onClose(message.id); }}>Закрыть</Button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export type DialogWidth = 400 | 560 | 720 | 960;
+
+export interface DialogProps {
+  readonly open: boolean;
+  readonly title: string;
+  readonly children: ReactNode;
+  readonly footer?: ReactNode;
+  readonly width?: DialogWidth;
+  /** Диалог с несохранёнными данными не закрывается нажатием на подложку. */
+  readonly dirty?: boolean;
+  /** Ошибка внутри диалога: баннер сверху, диалог не закрывается (§ 9.8). */
+  readonly error?: string;
+  readonly onClose: () => void;
+}
+
+const DIALOG_WIDTH: Readonly<Record<DialogWidth, string | undefined>> = {
+  400: styles.dialogS, 560: styles.dialogM, 720: styles.dialogL, 960: styles.dialogXL,
+};
+
+/**
+ * Диалог § 9.8. Взят встроенный элемент dialog: он сам захватывает фокус,
+ * закрывается по Esc, возвращает фокус вызвавшему элементу и живёт в
+ * верхнем слое — то есть диалог поверх диалога получается невозможным.
+ */
+export function Dialog({
+  open, title, children, footer, width = 560, dirty = false, error, onClose,
+}: DialogProps): ReactNode {
+  const node = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = node.current;
+    if (dialog === null) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  return (
+    <dialog
+      className={[styles.dialog, DIALOG_WIDTH[width]].filter(Boolean).join(' ')}
+      ref={node}
+      aria-label={title}
+      onCancel={(event) => { event.preventDefault(); onClose(); }}
+      onClick={(event) => { if (!dirty && event.target === node.current) onClose(); }}
+    >
+      <div className={styles.dialogHead}>
+        <Heading level={3}>{title}</Heading>
+        <IconButton label="Закрыть" icon={<X size={16} aria-hidden="true" />} onClick={onClose} />
+      </div>
+      <div className={styles.dialogBody}>
+        {error === undefined ? null : <Banner tone="danger" title="Ошибка">{error}</Banner>}
+        {children}
+      </div>
+      {footer === undefined ? null : <div className={styles.dialogFoot}>{footer}</div>}
+    </dialog>
+  );
+}
+
+export interface ConfirmDialogProps {
+  readonly open: boolean;
+  /** Заголовок — вопрос: «Аннулировать событие 2026-DUS-0017?» */
+  readonly title: string;
+  /** Текст — последствия: «Событие будет исключено из всех показателей». */
+  readonly consequences: string;
+  /** Подтверждающее слово для необратимых действий: пользователь набирает
+      регистрационный номер объекта (§ 9.9). */
+  readonly confirmWord?: string;
+  readonly actionLabel: string;
+  readonly reason?: ReactNode;
+  readonly typed?: string;
+  readonly onTyped?: (value: string) => void;
+  readonly onConfirm: () => void;
+  readonly onClose: () => void;
+}
+
+export function ConfirmDialog({
+  open, title, consequences, confirmWord, actionLabel, reason, typed = '', onTyped, onConfirm, onClose,
+}: ConfirmDialogProps): ReactNode {
+  const ready = confirmWord === undefined || typed === confirmWord;
+  return (
+    <Dialog
+      open={open}
+      title={title}
+      width={400}
+      onClose={onClose}
+      footer={(
+        <>
+          <Button kind="normal" onClick={onClose}>Отмена</Button>
+          <Button
+            kind="danger"
+            disabled={!ready}
+            disabledReason={ready ? undefined : `Наберите ${confirmWord ?? ''} для подтверждения`}
+            onClick={onConfirm}
+          >
+            {actionLabel}
+          </Button>
+        </>
+      )}
+    >
+      <Stack gap="sp-3">
+        <Text variant="body" measure>{consequences}</Text>
+        {reason}
+        {confirmWord === undefined ? null : (
+          <Text variant="small" tone="secondary">
+            {`Для подтверждения наберите ${confirmWord}`}
+          </Text>
+        )}
+        {confirmWord === undefined ? null : (
+          <input
+            className={styles.confirmWord}
+            type="text"
+            value={typed}
+            aria-label={`Подтверждение: ${confirmWord}`}
+            onChange={(event) => { onTyped?.(event.target.value); }}
+          />
+        )}
+      </Stack>
+    </Dialog>
+  );
+}
+
+export interface DiskSpaceIndicatorProps {
+  readonly freeBytes: number;
+  readonly totalBytes: number;
+}
+
+/** Свободное место § 9.11. Порог: выше 20 % обычный, 10–20 % предупреждение. */
+export function DiskSpaceIndicator({ freeBytes, totalBytes }: DiskSpaceIndicatorProps): ReactNode {
+  const share = totalBytes <= 0 ? 0 : freeBytes / totalBytes;
+  const tone = share < 0.1 ? styles.diskDanger : (share < 0.2 ? styles.diskWarn : '');
+  return (
+    <div className={styles.disk}>
+      <span className={styles.diskText}>
+        {`Свободно ${formatFileSize(freeBytes)} из ${formatFileSize(totalBytes)}`}
+      </span>
+      <span className={styles.diskBar}>
+        <span className={[styles.diskFill, tone].filter(Boolean).join(' ')} ref={(el) => {
+          // Доля занятого — величина данных, а не дизайн-системы, поэтому
+          // ширина выставляется после раскладки, а не атрибутом style.
+          if (el !== null) el.style.setProperty('width', `${String(Math.round(share * 100))}%`);
+        }} />
+      </span>
+    </div>
+  );
+}
+
+/** Поддерживаемые браузеры — допущение Д-09. */
+export const SUPPORTED_BROWSERS = 'Chrome 120 и выше, Edge 120 и выше, Firefox 120 и выше';
+
+export interface UnsupportedBrowserProps {
+  readonly detected: string;
+}
+
+/**
+ * Экран несовместимости § 9.13. Показывается вместо приложения: обломки
+ * интерфейса пользователю не показываются.
+ */
+export function UnsupportedBrowser({ detected }: UnsupportedBrowserProps): ReactNode {
+  return (
+    <div className={styles.unsupported}>
+      <MonitorX size={32} className={styles.stateIconDanger} aria-hidden="true" />
+      <Heading level={2}>Браузер не поддерживается</Heading>
+      <Text variant="body" measure>{`Обнаружен: ${detected}`}</Text>
+      <Text variant="body" measure>{`Поддерживаются: ${SUPPORTED_BROWSERS}`}</Text>
+      <Text variant="body" measure>
+        Обратитесь к системному администратору, чтобы обновить браузер.
+      </Text>
+    </div>
   );
 }

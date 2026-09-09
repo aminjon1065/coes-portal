@@ -16,8 +16,9 @@ export interface ButtonProps {
   readonly size?: ButtonSize;
   readonly icon?: ReactNode;
   readonly disabled?: boolean;
-  /** Причина недоступности. Отключённая кнопка обязана её объяснять (§ 1, п. 7). */
-  readonly disabledReason?: string;
+  /** Причина недоступности. Отключённая кнопка обязана её объяснять (§ 1, п. 7).
+      Явное «| undefined» — передача насквозь при exactOptionalPropertyTypes. */
+  readonly disabledReason?: string | undefined;
   /** «выполняется»: кнопка недоступна для повторного нажатия (§ 8.1). */
   readonly busy?: boolean;
   readonly onClick?: () => void;

@@ -10,6 +10,7 @@ import {
   SideNav, TopBar, ConnectionIndicator, Breadcrumbs, Tabs, Pagination,
   Table, DescriptionList, MetricTile, Avatar, AuditFeed,
   Field, TextInput, TextArea, NumberInput, Checkbox, RadioGroup, Switch, Select,
+  Dialog, ConfirmDialog, DiskSpaceIndicator, UnsupportedBrowser, Toasts,
   NETWORK_ERROR,
   type Column, type Row,
   type LifecycleStatus, type SeverityToken, type TextVariant, type ButtonKind,
@@ -388,6 +389,50 @@ export function Vitrina(): ReactNode {
             <Table caption="Загрузка" columns={КОЛОНКИ.slice(0, 3)} rows={[]} rowKey={() => ''} state="loading" />
             <Table caption="Ничего не найдено" columns={КОЛОНКИ.slice(0, 3)} rows={[]} rowKey={() => ''} state="notFound" />
           </Grid>
+        </Stack>
+      </Panel>
+
+      <Panel title={<Heading level={3}>Диалоги, сообщения, свободное место</Heading>}>
+        <Stack gap="sp-4">
+          <Grid columns={2}>
+            <Stack gap="sp-3">
+              <DiskSpaceIndicator freeBytes={1319413953331} totalBytes={4398046511104} />
+              <DiskSpaceIndicator freeBytes={659706976665} totalBytes={4398046511104} />
+              <DiskSpaceIndicator freeBytes={219902325555} totalBytes={4398046511104} />
+            </Stack>
+            <Toasts
+              messages={[
+                { id: '1', text: 'Событие 2026-SUG-0001 зарегистрировано', tone: 'success' },
+                { id: '2', text: 'Отчёт за август сформирован' },
+              ]}
+              onClose={() => undefined}
+            />
+          </Grid>
+          <Text variant="small" tone="secondary">
+            Диалоги показаны отдельным снимком: модальное окно занимает верхний слой и затемняет
+            страницу, а два открытых сразу запрещены § 13 п. 14.
+          </Text>
+          <Dialog
+            open={false}
+            title="Оформление замещения"
+            width={560}
+            onClose={() => undefined}
+            footer={<><Button kind="normal">Отмена</Button><Button>Оформить</Button></>}
+          >
+            <Text variant="body" measure>
+              Замещение действует с даты начала по дату окончания включительно и прекращается отзывом приказа.
+            </Text>
+          </Dialog>
+          <ConfirmDialog
+            open={false}
+            title="Аннулировать событие 2026-DUS-0017?"
+            consequences="Событие будет исключено из всех показателей. Действие необратимо."
+            confirmWord="2026-DUS-0017"
+            actionLabel="Аннулировать"
+            onConfirm={() => undefined}
+            onClose={() => undefined}
+          />
+          <UnsupportedBrowser detected="Internet Explorer 11" />
         </Stack>
       </Panel>
 

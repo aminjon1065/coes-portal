@@ -65,3 +65,97 @@
 }
 .tooltipWrap:hover > .tooltip,
 .tooltipWrap:focus-within > .tooltip { opacity: 1; visibility: visible; }
+
+/* § 9.7. Всплывающее сообщение. Только подтверждение успеха и сведения,
+   не требующие реакции: ошибка, требующая действия, показывается на месте. */
+.toasts {
+  position: fixed;
+  right: var(--sp-6);
+  bottom: var(--sp-6);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  width: var(--w-toast);
+  padding: var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-3);
+  background-color: var(--c-surface);
+  box-shadow: var(--sh-2);
+  color: var(--c-n-900);
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+}
+.toastSuccess { border-color: var(--c-success-600); }
+
+/* § 9.8. Диалог. Диалог поверх диалога запрещён, поэтому используется
+   встроенный элемент dialog: он же даёт захват фокуса и закрытие по Esc. */
+.dialog {
+  padding: var(--sp-0);
+  border: 0;
+  border-radius: var(--r-4);
+  background-color: var(--c-surface);
+  color: var(--c-n-900);
+  box-shadow: var(--sh-3);
+}
+.dialog::backdrop { background-color: var(--c-overlay); }
+.dialogS { width: var(--w-dialog-1); }
+.dialogM { width: var(--w-dialog-2); }
+.dialogL { width: var(--w-dialog-3); }
+.dialogXL { width: var(--w-dialog-4); }
+.dialogHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-6);
+  border-bottom: 1px solid var(--c-border);
+}
+.dialogBody { padding: var(--sp-6); }
+.dialogFoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-6);
+  border-top: 1px solid var(--c-border);
+}
+
+/* § 9.11. Указатель свободного места. */
+.disk { display: flex; flex-direction: column; gap: var(--sp-1); }
+.diskBar { height: var(--sp-2); border-radius: var(--r-full); background-color: var(--c-n-100); overflow: hidden; }
+.diskFill { height: var(--sp-2); background-color: var(--c-success-600); }
+.diskWarn { background-color: var(--c-warning-600); }
+.diskDanger { background-color: var(--c-danger-600); }
+.diskText { color: var(--c-n-700); font-size: var(--t-small-size); line-height: var(--t-small-line); font-variant-numeric: tabular-nums; }
+
+/* § 9.13. Экран несовместимости показывается вместо приложения. */
+.unsupported {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  /* Ширина текста ограничивается самим текстом (Text measure), а не
+     полями: значение auto токеном не является. */
+  padding: var(--sp-16) var(--sp-6);
+  text-align: center;
+}
+
+/* § 9.9. Поле подтверждающего слова: пользователь набирает регистрационный
+   номер объекта, и только тогда необратимое действие становится доступным. */
+.confirmWord {
+  height: var(--h-input);
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-2);
+  background-color: var(--c-n-0);
+  color: var(--c-n-900);
+  font: inherit;
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+}
