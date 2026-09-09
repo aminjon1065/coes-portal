@@ -42,3 +42,48 @@
 
 .icon { width: var(--h-button-m); height: var(--h-button-m); padding-left: var(--sp-05); padding-right: var(--sp-05); }
 .iconS { width: var(--h-button-s); height: var(--h-button-s); }
+
+/* § 8.3. Группа кнопок: без промежутка, общая граница, скругление по краям. */
+.group { display: inline-flex; }
+/* Общая граница получается снятием левой у соседей, а не отрицательным
+   отступом: отступ вне шкалы § 4.1 запрещён. */
+.group > :not(:first-child) { border-left-width: 0; }
+.group > :first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.group > :last-child { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.group > :not(:first-child):not(:last-child) { border-radius: var(--r-0); }
+
+/* § 8.4. Меню. Опасные действия — в конце и цветом опасности. */
+.menu { position: relative; display: inline-flex; }
+.menuList {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30;
+  min-width: var(--w-menu-min);
+  margin-top: var(--sp-1);
+  padding-top: var(--sp-1);
+  padding-bottom: var(--sp-1);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-2);
+  background-color: var(--c-surface);
+  box-shadow: var(--sh-2);
+  list-style: none;
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  height: var(--h-menu-row);
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border: 0;
+  background-color: var(--c-transparent);
+  color: var(--c-n-800);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.menuItem:hover:not(:disabled) { background-color: var(--c-n-50); }
+.menuItem:disabled { color: var(--c-n-400); cursor: not-allowed; }
+.menuDanger { color: var(--c-danger-600); }

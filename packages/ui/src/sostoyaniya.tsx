@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { ReactNode } from 'react';
 import { AlertCircle, Inbox, Loader2, Lock, SearchX, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
 import styles from './sostoyaniya.module.css';
@@ -138,5 +139,22 @@ export function RestrictedNotice(): ReactNode {
     <Banner tone="warning">
       Не вводите сведения, составляющие государственную тайну. Система для них не предназначена.
     </Banner>
+  );
+}
+
+export interface TooltipProps {
+  readonly children: ReactNode;
+  /** Текст подсказки. Интерактивных элементов не содержит (§ 9.10). */
+  readonly text: string;
+}
+
+/** Подсказка § 9.10. Появляется через 400 мс, ширина не более 280 px. */
+export function Tooltip({ children, text }: TooltipProps): ReactNode {
+  const id = useId();
+  return (
+    <span className={styles.tooltipWrap}>
+      <span aria-describedby={id}>{children}</span>
+      <span className={styles.tooltip} id={id} role="tooltip">{text}</span>
+    </span>
   );
 }

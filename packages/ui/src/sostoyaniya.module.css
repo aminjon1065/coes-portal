@@ -41,3 +41,27 @@
 .bannerDanger { background-color: var(--c-danger-50); border-left-color: var(--c-danger-600); color: var(--c-danger-600); }
 .bannerSuccess { background-color: var(--c-success-50); border-left-color: var(--c-success-600); color: var(--c-success-600); }
 .bannerBody { color: var(--c-n-900); }
+
+/* § 9.10. Подсказка. Задержка появления 400 ms сделана transition-delay,
+   а не таймером: подсказка обязана появляться и по фокусу с клавиатуры. */
+.tooltipWrap { position: relative; display: inline-flex; }
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 20;
+  max-width: var(--w-tooltip);
+  margin-bottom: var(--sp-1);
+  padding: var(--sp-2);
+  border-radius: var(--r-2);
+  background-color: var(--c-n-900);
+  color: var(--c-n-0);
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms linear 400ms, visibility 0ms linear 400ms;
+  pointer-events: none;
+}
+.tooltipWrap:hover > .tooltip,
+.tooltipWrap:focus-within > .tooltip { opacity: 1; visibility: visible; }

@@ -1,0 +1,133 @@
+/* Навигация — docs/07-КОМПОНЕНТЫ.md § 5. */
+
+/* § 5.1. Боковое меню. Недоступный по правам раздел не отображается вовсе:
+   отключённая строка сообщала бы о существовании того, чего пользователь
+   видеть не должен. */
+.sidenav {
+  display: flex;
+  flex-direction: column;
+  width: var(--w-sidenav);
+  padding-top: var(--sp-2);
+  padding-bottom: var(--sp-2);
+  background-color: var(--c-p-800);
+  color: var(--c-n-0);
+}
+.sidenavCollapsed { width: var(--w-sidenav-collapsed); }
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: var(--h-row-compact);
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border: 0;
+  border-left: 3px solid var(--c-transparent);
+  background-color: var(--c-transparent);
+  color: var(--c-n-0);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.navItem:hover { background-color: var(--c-nav-hover); }
+.navCurrent { border-left-color: var(--c-n-0); background-color: var(--c-nav-current); }
+.navLabel { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* § 5.2. Шапка. */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: var(--h-header);
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border-bottom: 1px solid var(--c-border);
+  background-color: var(--c-surface);
+}
+.topbarTitle { flex: 0 0 auto; }
+.topbarSearch { width: var(--w-search); }
+.topbarSpacer { flex: 1; }
+@media (max-width: 1024px) { .topbarSearch { display: none; } }
+
+.postSwitch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-left: var(--sp-2);
+  padding-right: var(--sp-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-2);
+  background-color: var(--c-surface);
+  color: var(--c-n-800);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.postSwitchStatic { cursor: default; }
+
+/* § 5.2.1. Индикатор соединения. Исправное состояние места не занимает. */
+.connection {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--h-connection);
+  padding-left: var(--sp-2);
+  padding-right: var(--sp-2);
+  border-radius: var(--r-2);
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
+}
+.connectionRetrying { background-color: var(--c-warning-50); color: var(--c-warning-600); }
+.connectionLost { background-color: var(--c-danger-50); color: var(--c-danger-600); }
+.connectionSpin { animation: rotate 800ms linear infinite; }
+@keyframes rotate { to { transform: rotate(360deg); } }
+
+/* § 5.3. Хлебные крошки. Последний элемент ссылкой не является. */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
+  color: var(--c-n-600);
+}
+.crumbLink { color: var(--c-n-600); }
+.crumbLast { color: var(--c-n-800); }
+
+/* § 5.4. Вкладки. При нехватке ширины прокручиваются сами, страница — нет. */
+.tabs {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
+  overflow-x: auto;
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--h-tab);
+  border: 0;
+  border-bottom: 2px solid var(--c-transparent);
+  background-color: var(--c-transparent);
+  color: var(--c-n-700);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tab:hover:not([aria-disabled='true']) { color: var(--c-n-900); }
+.tabActive { border-bottom-color: var(--c-p-500); color: var(--c-n-900); font-weight: 600; }
+/* Недоступная вкладка остаётся в порядке обхода: иначе причина
+   недоступности не будет прочитана с клавиатуры (§ 5.4). */
+.tab[aria-disabled='true'] { color: var(--c-n-400); cursor: not-allowed; }
+
+/* § 5.5. Постраничная навигация. */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
+  color: var(--c-n-600);
+}
+.paginationCount { font-variant-numeric: tabular-nums; }

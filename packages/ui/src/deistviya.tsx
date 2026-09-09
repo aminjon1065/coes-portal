@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MoreHorizontal } from 'lucide-react';
 import styles from './deistviya.module.css';
 
 /** Действия — docs/07-КОМПОНЕНТЫ.md § 8. */
@@ -65,5 +66,72 @@ export function IconButton({
     <button className={className} type="button" disabled={disabled} aria-label={label} title={label} onClick={onClick}>
       {icon}
     </button>
+  );
+}
+
+export interface ButtonGroupProps {
+  readonly children: ReactNode;
+  /** Назначение группы озвучивается вслух: это переключатель представления (§ 8.3). */
+  readonly label: string;
+}
+
+/** Группа кнопок § 8.3: переключение представления — таблица, карта, обе. */
+export function ButtonGroup({ children, label }: ButtonGroupProps): ReactNode {
+  return <span className={styles.group} role="group" aria-label={label}>{children}</span>;
+}
+
+export interface MenuItem {
+  readonly id: string;
+  readonly label: string;
+  readonly icon?: ReactNode;
+  /** Опасные действия § 8.4 уходят в конец списка и красятся цветом опасности. */
+  readonly danger?: boolean;
+  readonly disabled?: boolean;
+  /** Причина недоступности: отключённый пункт обязан её объяснять (§ 8.4). */
+  readonly disabledReason?: string;
+  readonly onSelect?: () => void;
+}
+
+export interface MenuProps {
+  readonly label: string;
+  readonly items: readonly MenuItem[];
+  readonly icon?: ReactNode;
+}
+
+/**
+ * Меню § 8.4. Пустое меню не отображается вовсе: кнопка, за которой нет
+ * ни одного доступного действия, вводит в заблуждение.
+ */
+export function Menu({ label, items, icon }: MenuProps): ReactNode {
+  const [open, setOpen] = useState(false);
+  if (items.length === 0) return null;
+  const ordered = [...items.filter((i) => i.danger !== true), ...items.filter((i) => i.danger === true)];
+  return (
+    <span className={styles.menu}>
+      <IconButton
+        label={label}
+        icon={icon ?? <MoreHorizontal size={16} aria-hidden="true" />}
+        onClick={() => { setOpen(!open); }}
+      />
+      {open ? (
+        <ul className={styles.menuList} role="menu" aria-label={label}>
+          {ordered.map((item) => (
+            <li key={item.id} role="none">
+              <button
+                className={[styles.menuItem, item.danger === true ? styles.menuDanger : ''].filter(Boolean).join(' ')}
+                type="button"
+                role="menuitem"
+                disabled={item.disabled === true}
+                title={item.disabled === true ? item.disabledReason : undefined}
+                onClick={() => { setOpen(false); item.onSelect?.(); }}
+              >
+                {item.icon}
+                {item.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </span>
   );
 }

@@ -60,3 +60,16 @@
 
 .dividerH { border: 0; border-top: 1px solid var(--c-border); width: 100%; }
 .dividerV { border: 0; border-left: 1px solid var(--c-border); align-self: stretch; }
+
+/* § 4.6. Полоса действий. Высота 48, промежуток 8; лишние действия уходят
+   в меню, а не переносятся на вторую строку и не обрезаются. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--h-toolbar);
+  overflow: hidden;
+}
+.toolbarLead { display: inline-flex; align-items: center; gap: var(--sp-2); flex: 0 0 auto; }
+.toolbarItem { flex: 0 0 auto; }
+.toolbarHidden { display: none; }

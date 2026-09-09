@@ -103,6 +103,9 @@
   --sp-16: 64px;
 
   /* § 4.5. Скругления */
+  /* Отсутствие скругления — не скругление вне шкалы § 4.5, а его отсутствие;
+     токен нужен, чтобы средние кнопки группы § 8.3 обходились без литерала. */
+  --r-0: 0;
   --r-1: 2px;
   --r-2: 4px;
   --r-3: 6px;
@@ -129,6 +132,25 @@
   --h-row-normal: 44px;
   --h-header: 52px;
   --w-sidenav: 248px;
+  --w-sidenav-collapsed: 56px;
+  --h-toolbar: 48px;
+  --h-tab: 36px;
+  --h-menu-row: 32px;
+  --w-menu-min: 180px;
+  --w-tooltip: 280px;
+  --w-toast: 360px;
+  --w-search: 320px;
+  --h-connection: 24px;
+  --w-dialog-1: 400px;
+  --w-dialog-2: 560px;
+  --w-dialog-3: 720px;
+  --w-dialog-4: 960px;
+
+  /* Наведение и текущий раздел бокового меню. Значения заданы
+     docs/07-КОМПОНЕНТЫ.md § 5.1 дословно; в перечне цветов 06 § 2 их нет —
+     запись В-19. */
+  --c-nav-hover: rgba(255, 255, 255, 0.08);
+  --c-nav-current: rgba(255, 255, 255, 0.14);
 }
 
 @media (prefers-reduced-motion: reduce) {

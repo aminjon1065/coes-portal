@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
-import { Plus, Pencil, Trash2, Printer } from 'lucide-react';
+import { Plus, Pencil, Trash2, Printer, LayoutGrid, Map, Rows3, Bell, Home, Users, FileText } from 'lucide-react';
 import {
   Stack, Grid, Panel, Section, Divider,
   Text, Heading,
   Button, IconButton,
   Tag, StatusBadge, SeverityBadge, Counter,
-  Skeleton, Spinner, EmptyState, ErrorState, NoAccessState, Banner, RestrictedNotice,
+  Skeleton, Spinner, EmptyState, ErrorState, NoAccessState, Banner, RestrictedNotice, Tooltip,
+  Toolbar, ButtonGroup, Menu,
+  SideNav, TopBar, ConnectionIndicator, Breadcrumbs, Tabs, Pagination,
   NETWORK_ERROR,
   type LifecycleStatus, type SeverityToken, type TextVariant, type ButtonKind,
 } from '@coes/ui';
@@ -49,6 +51,32 @@ const ВИДЫ_КНОПОК: readonly { readonly kind: ButtonKind; readonly name
   { kind: 'normal', name: 'обычная' },
   { kind: 'quiet', name: 'тихая' },
   { kind: 'danger', name: 'опасная' },
+];
+
+const РАЗДЕЛЫ = [
+  { id: 'stol', label: 'Рабочий стол', icon: <Home size={20} aria-hidden="true" />, href: '#stol' },
+  { id: 'uved', label: 'Уведомления', icon: <Bell size={20} aria-hidden="true" />, href: '#uved', counter: 7 },
+  { id: 'sotr', label: 'Сотрудники', icon: <Users size={20} aria-hidden="true" />, href: '#sotr' },
+  { id: 'dok', label: 'Документы', icon: <FileText size={20} aria-hidden="true" />, href: '#dok' },
+];
+
+const ВКЛАДКИ = [
+  { id: 'svedeniya', label: 'Сведения' },
+  { id: 'naznacheniya', label: 'Назначения', counter: 3 },
+  { id: 'zameshcheniya', label: 'Замещения' },
+  { id: 'zhurnal', label: 'Журнал', disabled: true, disabledReason: 'Журнал доступен обладателю разрешения audit.read' },
+];
+
+const DEISTVIYA_POLOSY = [
+  { id: 'sozdat', label: 'Создать', icon: <Plus size={16} aria-hidden="true" /> },
+  { id: 'pechat', label: 'Печать', icon: <Printer size={16} aria-hidden="true" /> },
+  { id: 'pravit', label: 'Изменить', icon: <Pencil size={16} aria-hidden="true" /> },
+  { id: 'udalit', label: 'Аннулировать', icon: <Trash2 size={16} aria-hidden="true" />, danger: true },
+];
+
+const НАЗНАЧЕНИЯ = [
+  { post: 'Оперативный дежурный', unit: 'Согдийская область' },
+  { post: 'Специалист', unit: 'Центральный аппарат' },
 ];
 
 export function Vitrina(): ReactNode {
@@ -143,6 +171,55 @@ export function Vitrina(): ReactNode {
           <Banner tone="danger" title="Ошибка">Не удалось сформировать отчёт. Повторите или обратитесь к администратору.</Banner>
           <Banner tone="success" title="Успех">Событие 2026-SUG-0001 зарегистрировано.</Banner>
           <RestrictedNotice />
+        </Stack>
+      </Panel>
+
+      <Panel title={<Heading level={3}>Навигация</Heading>}>
+        <Stack gap="sp-4">
+          <TopBar
+            title="Сотрудники"
+            contexts={НАЗНАЧЕНИЯ}
+            notifications={<Counter value={7} />}
+            profile={<Text variant="small">Раҳимов Д. С.</Text>}
+          />
+          <Text variant="small" tone="secondary">
+            Индикатор соединения в шапке выше не показан намеренно: исправное соединение места не занимает.
+          </Text>
+          <Stack direction="horizontal" gap="sp-4" align="center" wrap>
+            <ConnectionIndicator state="retrying" />
+            <ConnectionIndicator state="lost" />
+          </Stack>
+          <Breadcrumbs
+            crumbs={[
+              { label: 'Оргструктура', href: '#org' },
+              { label: 'Согдийская область', href: '#sogd' },
+              { label: 'Раҳимов Далер Саидович' },
+            ]}
+          />
+          <Tabs tabs={ВКЛАДКИ} currentId="naznacheniya" />
+          <Stack direction="horizontal" gap="sp-4" align="center" wrap>
+            <Pagination from={1} to={50} total={1234} pageSize={50} />
+            <Pagination from={1} to={50} total={12345} pageSize={50} />
+            <Pagination from={1} to={50} pageSize={50} busy />
+          </Stack>
+          <Grid columns={3}>
+            <SideNav sections={РАЗДЕЛЫ} currentId="uved" />
+            <SideNav sections={РАЗДЕЛЫ} currentId="uved" collapsed />
+            <Stack gap="sp-3">
+              <Toolbar actions={DEISTVIYA_POLOSY} />
+              <Stack direction="horizontal" gap="sp-2" align="center">
+                <ButtonGroup label="Представление">
+                  <Button kind="normal" size="s" icon={<Rows3 size={16} aria-hidden="true" />}>Таблица</Button>
+                  <Button kind="normal" size="s" icon={<Map size={16} aria-hidden="true" />}>Карта</Button>
+                  <Button kind="normal" size="s" icon={<LayoutGrid size={16} aria-hidden="true" />}>Обе</Button>
+                </ButtonGroup>
+                <Menu label="Ещё действия" items={DEISTVIYA_POLOSY} />
+                <Tooltip text="Подсказка появляется через 400 мс и не содержит интерактивных элементов">
+                  <Text variant="small">Наведите на этот текст</Text>
+                </Tooltip>
+              </Stack>
+            </Stack>
+          </Grid>
         </Stack>
       </Panel>
 
