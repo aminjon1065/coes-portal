@@ -2,6 +2,16 @@ import { z } from 'zod';
 import { errorResponse, accepted } from './obshchee.ts';
 import { loginRequest, sessionResponse, passwordRequest, contextRequest } from './auth.ts';
 import { settingsResponse, settingsUpdateRequest, systemStatusResponse } from './sys.ts';
+import {
+  orgUnit, orgUnitCreateRequest, orgUnitListResponse,
+  position, positionCreateRequest, person, personCreateRequest,
+  assignment, assignmentCreateRequest, delegation, delegationCreateRequest, roleGrantRequest,
+} from './org.ts';
+import {
+  account, accountCreateRequest, accountBlockRequest, accountBlockResponse,
+  auditListResponse, auditVerifyResponse,
+} from './iam-schema.ts';
+import { commonFilter } from './obshchee.ts';
 
 /**
  * Единственное описание методов API — docs/09-API.md § 9.
@@ -31,88 +41,133 @@ export interface Endpoint {
   readonly permission: string | null | 'anonymous';
 }
 
-const LIST = [
-  {
-    name: 'login',
-    method: 'POST',
-    path: '/auth/login',
+/**
+ * Методы описаны объектом, а имя метода — это ключ. Ручная нумерация
+ * привела бы к тому, что перестановка записи молча меняет имена.
+ */
+const DESCRIBED = {
+  login: {
+    name: 'login', method: 'POST', path: '/auth/login',
     summary: 'Вход по имени пользователя и паролю',
-    request: loginRequest,
-    response: sessionResponse,
-    permission: 'anonymous',
+    request: loginRequest, response: sessionResponse, permission: 'anonymous',
   },
-  {
-    name: 'logout',
-    method: 'POST',
-    path: '/auth/logout',
+  logout: {
+    name: 'logout', method: 'POST', path: '/auth/logout',
     summary: 'Выход, закрытие текущей сессии',
-    response: accepted,
-    permission: null,
+    response: accepted, permission: null,
   },
-  {
-    name: 'getSession',
-    method: 'GET',
-    path: '/auth/session',
+  getSession: {
+    name: 'getSession', method: 'GET', path: '/auth/session',
     summary: 'Текущая сессия: человек, назначение, разрешения, область видимости, замещения',
-    response: sessionResponse,
-    permission: null,
+    response: sessionResponse, permission: null,
   },
-  {
-    name: 'changePassword',
-    method: 'POST',
-    path: '/auth/password',
+  changePassword: {
+    name: 'changePassword', method: 'POST', path: '/auth/password',
     summary: 'Смена собственного пароля',
-    request: passwordRequest,
-    response: accepted,
-    permission: null,
+    request: passwordRequest, response: accepted, permission: null,
   },
-  {
-    name: 'switchContext',
-    method: 'POST',
-    path: '/auth/context',
+  switchContext: {
+    name: 'switchContext', method: 'POST', path: '/auth/context',
     summary: 'Переключение активного назначения',
-    request: contextRequest,
-    response: sessionResponse,
-    permission: null,
+    request: contextRequest, response: sessionResponse, permission: null,
   },
-  {
-    name: 'getSettings',
-    method: 'GET',
-    path: '/settings',
+
+  getOrgUnits: {
+    name: 'getOrgUnits', method: 'GET', path: '/org-units',
+    summary: 'Реестр подразделений в области видимости',
+    // Отдельного разрешения нет: § 4.3 относит наименования подразделений
+    // и должностей к видимому всем независимо от области. В матрице § 3.1
+    // разрешения org.unit.read нет ни у одной роли — запись В-24.
+    query: commonFilter, response: orgUnitListResponse, permission: null,
+  },
+  createOrgUnit: {
+    name: 'createOrgUnit', method: 'POST', path: '/org-units',
+    summary: 'Создание подразделения',
+    request: orgUnitCreateRequest, response: orgUnit, permission: 'org.unit.manage',
+  },
+  getOrgUnit: {
+    name: 'getOrgUnit', method: 'GET', path: '/org-units/{id}',
+    summary: 'Карточка подразделения',
+    response: orgUnit, permission: null,
+  },
+  createPosition: {
+    name: 'createPosition', method: 'POST', path: '/positions',
+    summary: 'Создание должности',
+    request: positionCreateRequest, response: position, permission: 'org.position.manage',
+  },
+  createPerson: {
+    name: 'createPerson', method: 'POST', path: '/persons',
+    summary: 'Создание карточки сотрудника',
+    request: personCreateRequest, response: person, permission: 'org.person.manage',
+  },
+  createAssignment: {
+    name: 'createAssignment', method: 'POST', path: '/assignments',
+    summary: 'Назначение на должность приказом',
+    request: assignmentCreateRequest, response: assignment, permission: 'org.assignment.manage',
+  },
+  createDelegation: {
+    name: 'createDelegation', method: 'POST', path: '/delegations',
+    summary: 'Оформление замещения приказом',
+    request: delegationCreateRequest, response: delegation, permission: 'org.delegation.create',
+  },
+  grantAssignmentRole: {
+    name: 'grantAssignmentRole', method: 'POST', path: '/assignments/{id}/roles',
+    summary: 'Выдача роли назначению',
+    request: roleGrantRequest, response: accepted, permission: 'access.grant.manage',
+  },
+
+  createAccount: {
+    name: 'createAccount', method: 'POST', path: '/accounts',
+    summary: 'Создание учётной записи с одноразовым паролем',
+    request: accountCreateRequest, response: account, permission: 'iam.account.create',
+  },
+  blockAccount: {
+    name: 'blockAccount', method: 'POST', path: '/accounts/{id}/block',
+    summary: 'Блокировка учётной записи и закрытие всех её сессий',
+    request: accountBlockRequest, response: accountBlockResponse, permission: 'iam.account.block',
+  },
+  unblockAccount: {
+    name: 'unblockAccount', method: 'POST', path: '/accounts/{id}/unblock',
+    summary: 'Снятие блокировки учётной записи',
+    response: accepted, permission: 'iam.account.block',
+  },
+
+  getAuditEvents: {
+    name: 'getAuditEvents', method: 'GET', path: '/audit/events',
+    summary: 'Журнал действий',
+    query: commonFilter, response: auditListResponse, permission: 'audit.event.read_all',
+  },
+  verifyAudit: {
+    name: 'verifyAudit', method: 'POST', path: '/audit/verify',
+    summary: 'Проверка целостности цепочки журнала',
+    response: auditVerifyResponse, permission: 'audit.event.verify',
+  },
+
+  getSettings: {
+    name: 'getSettings', method: 'GET', path: '/settings',
     summary: 'Настройки и пределы',
-    response: settingsResponse,
-    permission: 'sys.setting.read',
+    response: settingsResponse, permission: 'sys.setting.read',
   },
-  {
-    name: 'putSettings',
-    method: 'PUT',
-    path: '/settings',
+  putSettings: {
+    name: 'putSettings', method: 'PUT', path: '/settings',
     summary: 'Изменение настроек',
-    request: settingsUpdateRequest,
-    response: settingsResponse,
-    permission: 'sys.setting.manage',
+    request: settingsUpdateRequest, response: settingsResponse, permission: 'sys.setting.manage',
   },
-  {
-    name: 'getSystemStatus',
-    method: 'GET',
-    path: '/system/status',
+  getSystemStatus: {
+    name: 'getSystemStatus', method: 'GET', path: '/system/status',
     summary: 'Состояние сервера: версия, база, диск, миграции',
-    response: systemStatusResponse,
-    permission: 'sys.status.read',
+    response: systemStatusResponse, permission: 'sys.status.read',
   },
-] as const satisfies readonly Endpoint[];
+} as const satisfies Readonly<Record<string, Endpoint>>;
 
 /**
  * Методы по имени. Тип каждой схемы здесь точный, а не «какая-нибудь схема»:
  * сгенерированный клиент берёт схемы отсюда и обязан знать их устройство,
  * иначе теряется весь смысл единственного описания (принцип П-2).
  */
-export const REGISTRY = {
-  login: LIST[0], logout: LIST[1], getSession: LIST[2], changePassword: LIST[3],
-  switchContext: LIST[4], getSettings: LIST[5], putSettings: LIST[6], getSystemStatus: LIST[7],
-} as const;
+export const REGISTRY = DESCRIBED;
 
-export const ENDPOINTS: readonly Endpoint[] = LIST;
+export const ENDPOINTS: readonly Endpoint[] = Object.values(DESCRIBED);
 
 /** Основание пути (§ 1). Абсолютных адресов здесь нет и быть не может (П-5). */
 export const API_BASE = '/api/v1';

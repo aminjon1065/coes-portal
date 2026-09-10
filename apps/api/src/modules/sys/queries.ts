@@ -24,8 +24,18 @@ export async function selectKnownKeys(db: Client): Promise<readonly string[]> {
   return rows.map((row) => row.key);
 }
 
-export async function updateSetting(db: Client, key: string, value: string): Promise<void> {
-  await db.query('UPDATE sys.setting SET value = $2, updated_at = now() WHERE key = $1', [key, value]);
+/**
+ * Запись значения. Для предела строки может ещё не быть: § 5.11 говорит,
+ * что значение по умолчанию живёт в реестре, а строка в настройках
+ * появляется тогда, когда его переопределяют.
+ */
+export async function upsertSetting(db: Client, key: string, value: string): Promise<void> {
+  await db.query(
+    `INSERT INTO sys.setting (key, value, is_editable)
+     VALUES ($1, $2, true)
+     ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now()`,
+    [key, value],
+  );
 }
 
 export async function selectLastMigration(db: Client): Promise<string | null> {

@@ -33,6 +33,13 @@ export default defineConfig({
     include: [...SUITES[suite]],
     exclude: ['**/node_modules/**', ...(suite === 'unit' ? ['packages/db/test/**'] : [])],
     environment: 'node',
+    /**
+     * Приёмочные сценарии выполняются по одному. ПС-0-05 останавливает
+     * базу и удаляет её том, а параллельный файл в это время держит
+     * подключение к тому же кластеру и падает по чужой причине. Наборы
+     * unit и db независимы и идут одновременно.
+     */
+    fileParallelism: suite !== 'api',
     coverage: {
       provider: 'v8',
       reporter: ['text-summary'],

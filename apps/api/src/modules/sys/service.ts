@@ -3,7 +3,8 @@ import type { Client } from 'pg';
 import { AppError } from '@coes/core/errors.ts';
 import { now } from '@coes/core/clock.ts';
 import { currentProfile } from '@coes/core/profile.ts';
-import { selectSettings, selectKnownKeys, updateSetting, selectLastMigration } from './queries.ts';
+import { LIMITS } from '@coes/core/limits.ts';
+import { selectSettings, selectKnownKeys, upsertSetting, selectLastMigration } from './queries.ts';
 
 /** Прикладная логика модуля sys — настройки и состояние сервера. */
 
@@ -18,24 +19,32 @@ export async function listSettings(db: Client): Promise<readonly Setting[]> {
 }
 
 /**
- * Настройка, которой нет в реестре, не создаётся молча: неизвестный ключ —
- * это опечатка, а принятая опечатка означает, что настройка не действует
- * и никто об этом не знает (docs/09-API.md § 3.2).
+ * Настройка, которой нет ни в таблице настроек, ни в реестре пределов, не
+ * создаётся молча: неизвестный ключ — это опечатка, а принятая опечатка
+ * означает, что настройка не действует и никто об этом не знает
+ * (docs/09-API.md § 3.2).
+ *
+ * Ключи реестра пределов допустимы даже без строки в таблице: § 5.11
+ * задаёт порядок «окружение → строка настройки → умолчание реестра», и
+ * строка появляется именно в тот момент, когда предел переопределяют.
  */
 export async function saveSettings(
   db: Client,
   items: readonly { readonly key: string; readonly value: string }[],
 ): Promise<readonly Setting[]> {
-  const known = new Set(await selectKnownKeys(db));
+  const known = new Set([
+    ...(await selectKnownKeys(db)),
+    ...LIMITS.map((limit) => limit.key),
+  ]);
   const unknown = items.filter((item) => !known.has(item.key)).map((item) => item.key);
   if (unknown.length > 0) {
     throw new AppError(
       'VALIDATION_FAILED',
-      `Неизвестная настройка: ${unknown.join(', ')}. Настройки создаются миграцией, а не запросом.`,
+      `Неизвестная настройка: ${unknown.join(', ')}. Настройки создаются миграцией, а пределы объявляются в реестре.`,
       { fields: unknown.map((key) => ({ path: key, message: 'Настройки с таким ключом нет' })) },
     );
   }
-  for (const item of items) await updateSetting(db, item.key, item.value);
+  for (const item of items) await upsertSetting(db, item.key, item.value);
   return selectSettings(db);
 }
 

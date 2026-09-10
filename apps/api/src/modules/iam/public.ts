@@ -10,5 +10,8 @@ export type {
 
 export const IAM_PERMISSIONS = {
   accountRead: 'iam.account.read',
-  accountManage: 'iam.account.manage',
+  accountCreate: 'iam.account.create',
+  accountUpdate: 'iam.account.update',
+  accountBlock: 'iam.account.block',
+  accountResetPassword: 'iam.account.reset_password',
 } as const;

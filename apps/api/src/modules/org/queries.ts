@@ -260,6 +260,57 @@ export interface DelegationRow {
   readonly endedOn: string;
 }
 
+export async function insertDelegation(
+  db: Client,
+  input: {
+    readonly id: string; readonly delegatorAssignmentId: string; readonly delegateAssignmentId: string;
+    readonly orderNumber: string; readonly startedOn: string; readonly endedOn: string;
+    readonly reason: string | null; readonly createdBy: string | null;
+  },
+): Promise<DelegationRow> {
+  await db.query(
+    `INSERT INTO org.delegation (
+       id, delegator_assignment_id, delegate_assignment_id, order_number,
+       started_on, ended_on, reason, created_by_person_id
+     ) VALUES ($1, $2, $3, $4, $5::date, $6::date, $7, $8)`,
+    [
+      input.id, input.delegatorAssignmentId, input.delegateAssignmentId, input.orderNumber,
+      input.startedOn, input.endedOn, input.reason, input.createdBy,
+    ],
+  );
+  const created = await selectDelegation(db, input.id);
+  if (created === undefined) throw new Error('Замещение не создано.');
+  return created;
+}
+
+export async function selectDelegation(db: Client, id: string): Promise<DelegationRow | undefined> {
+  const { rows } = await db.query<{
+    id: string; delegator_assignment_id: string; delegate_assignment_id: string;
+    delegator_position_name: string; order_number: string; started_on: string; ended_on: string;
+  }>(
+    `SELECT d.id::text AS id,
+            d.delegator_assignment_id::text AS delegator_assignment_id,
+            d.delegate_assignment_id::text AS delegate_assignment_id,
+            p.name AS delegator_position_name,
+            d.order_number, d.started_on::text AS started_on, d.ended_on::text AS ended_on
+       FROM org.delegation d
+       JOIN org.assignment a ON a.id = d.delegator_assignment_id
+       JOIN org.position p ON p.id = a.position_id
+      WHERE d.id = $1`,
+    [id],
+  );
+  const row = rows[0];
+  return row === undefined ? undefined : {
+    id: row.id,
+    delegatorAssignmentId: row.delegator_assignment_id,
+    delegateAssignmentId: row.delegate_assignment_id,
+    delegatorPositionName: row.delegator_position_name,
+    orderNumber: row.order_number,
+    startedOn: row.started_on,
+    endedOn: row.ended_on,
+  };
+}
+
 /** Действующие замещения, где человек — замещающий (§ 5.2). */
 export async function selectActiveDelegations(
   db: Client,

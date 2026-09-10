@@ -89,6 +89,45 @@ export const api = {
   /** Переключение активного назначения */
   switchContext: (body: In<typeof schemas.switchContextRequest>): Promise<Out<typeof schemas.switchContextResponse>> =>
     request(schemas.switchContextResponse, 'POST', `/auth/context`, body, undefined),
+  /** Реестр подразделений в области видимости */
+  getOrgUnits: (query?: Record<string, string | number | boolean>): Promise<Out<typeof schemas.getOrgUnitsResponse>> =>
+    request(schemas.getOrgUnitsResponse, 'GET', `/org-units`, undefined, query),
+  /** Создание подразделения */
+  createOrgUnit: (body: In<typeof schemas.createOrgUnitRequest>): Promise<Out<typeof schemas.createOrgUnitResponse>> =>
+    request(schemas.createOrgUnitResponse, 'POST', `/org-units`, body, undefined),
+  /** Карточка подразделения */
+  getOrgUnit: (id: string): Promise<Out<typeof schemas.getOrgUnitResponse>> =>
+    request(schemas.getOrgUnitResponse, 'GET', `/org-units/${encodeURIComponent(id)}`, undefined, undefined),
+  /** Создание должности */
+  createPosition: (body: In<typeof schemas.createPositionRequest>): Promise<Out<typeof schemas.createPositionResponse>> =>
+    request(schemas.createPositionResponse, 'POST', `/positions`, body, undefined),
+  /** Создание карточки сотрудника */
+  createPerson: (body: In<typeof schemas.createPersonRequest>): Promise<Out<typeof schemas.createPersonResponse>> =>
+    request(schemas.createPersonResponse, 'POST', `/persons`, body, undefined),
+  /** Назначение на должность приказом */
+  createAssignment: (body: In<typeof schemas.createAssignmentRequest>): Promise<Out<typeof schemas.createAssignmentResponse>> =>
+    request(schemas.createAssignmentResponse, 'POST', `/assignments`, body, undefined),
+  /** Оформление замещения приказом */
+  createDelegation: (body: In<typeof schemas.createDelegationRequest>): Promise<Out<typeof schemas.createDelegationResponse>> =>
+    request(schemas.createDelegationResponse, 'POST', `/delegations`, body, undefined),
+  /** Выдача роли назначению */
+  grantAssignmentRole: (id: string, body: In<typeof schemas.grantAssignmentRoleRequest>): Promise<Out<typeof schemas.grantAssignmentRoleResponse>> =>
+    request(schemas.grantAssignmentRoleResponse, 'POST', `/assignments/${encodeURIComponent(id)}/roles`, body, undefined),
+  /** Создание учётной записи с одноразовым паролем */
+  createAccount: (body: In<typeof schemas.createAccountRequest>): Promise<Out<typeof schemas.createAccountResponse>> =>
+    request(schemas.createAccountResponse, 'POST', `/accounts`, body, undefined),
+  /** Блокировка учётной записи и закрытие всех её сессий */
+  blockAccount: (id: string, body: In<typeof schemas.blockAccountRequest>): Promise<Out<typeof schemas.blockAccountResponse>> =>
+    request(schemas.blockAccountResponse, 'POST', `/accounts/${encodeURIComponent(id)}/block`, body, undefined),
+  /** Снятие блокировки учётной записи */
+  unblockAccount: (id: string): Promise<Out<typeof schemas.unblockAccountResponse>> =>
+    request(schemas.unblockAccountResponse, 'POST', `/accounts/${encodeURIComponent(id)}/unblock`, undefined, undefined),
+  /** Журнал действий */
+  getAuditEvents: (query?: Record<string, string | number | boolean>): Promise<Out<typeof schemas.getAuditEventsResponse>> =>
+    request(schemas.getAuditEventsResponse, 'GET', `/audit/events`, undefined, query),
+  /** Проверка целостности цепочки журнала */
+  verifyAudit: (): Promise<Out<typeof schemas.verifyAuditResponse>> =>
+    request(schemas.verifyAuditResponse, 'POST', `/audit/verify`, undefined, undefined),
   /** Настройки и пределы */
   getSettings: (): Promise<Out<typeof schemas.getSettingsResponse>> =>
     request(schemas.getSettingsResponse, 'GET', `/settings`, undefined, undefined),
@@ -100,4 +139,4 @@ export const api = {
     request(schemas.getSystemStatusResponse, 'GET', `/system/status`, undefined, undefined),
 };
 
-export type { loginRequest, loginResponse, logoutResponse, getSessionResponse, changePasswordRequest, changePasswordResponse, switchContextRequest, switchContextResponse, getSettingsResponse, putSettingsRequest, putSettingsResponse, getSystemStatusResponse } from './schemas.ts';
+export type { loginRequest, loginResponse, logoutResponse, getSessionResponse, changePasswordRequest, changePasswordResponse, switchContextRequest, switchContextResponse, getOrgUnitsResponse, createOrgUnitRequest, createOrgUnitResponse, getOrgUnitResponse, createPositionRequest, createPositionResponse, createPersonRequest, createPersonResponse, createAssignmentRequest, createAssignmentResponse, createDelegationRequest, createDelegationResponse, grantAssignmentRoleRequest, grantAssignmentRoleResponse, createAccountRequest, createAccountResponse, blockAccountRequest, blockAccountResponse, unblockAccountResponse, getAuditEventsResponse, verifyAuditResponse, getSettingsResponse, putSettingsRequest, putSettingsResponse, getSystemStatusResponse } from './schemas.ts';

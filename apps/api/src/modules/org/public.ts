@@ -1,10 +1,10 @@
 /** Единственный вход в модуль org извне (docs/03-АРХИТЕКТУРА.md § 3). */
 export {
   createOrgUnit, listOrgUnits, createPosition, createPerson,
-  createAssignment, activeAssignments, assignmentById, activeDelegations, personById,
+  createAssignment, createDelegation, activeAssignments, assignmentById, activeDelegations, personById,
 } from './service.ts';
 export type {
-  CreateUnit, CreateAssignment,
+  CreateUnit, CreateAssignment, CreateDelegation,
   OrgUnitRow, PositionRow, PersonRow, AssignmentRow, DelegationRow,
 } from './service.ts';
 

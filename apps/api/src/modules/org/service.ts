@@ -6,6 +6,7 @@ import {
   insertUnit, selectUnit, selectUnitsInScope,
   insertPosition, insertPerson, selectPerson,
   insertAssignment, selectAssignment, selectActiveAssignments, selectActiveDelegations,
+  insertDelegation,
 } from './queries.ts';
 import type { OrgUnitRow, PositionRow, PersonRow, AssignmentRow, DelegationRow } from './queries.ts';
 
@@ -105,6 +106,48 @@ export async function activeAssignments(db: Client, personId: string): Promise<r
 
 export async function assignmentById(db: Client, id: string): Promise<AssignmentRow | undefined> {
   return selectAssignment(db, id);
+}
+
+export interface CreateDelegation {
+  readonly delegatorAssignmentId: string;
+  readonly delegateAssignmentId: string;
+  readonly orderNumber: string;
+  readonly startedOn: string;
+  readonly endedOn: string;
+  readonly reason: string | null;
+}
+
+/**
+ * Оформление замещения приказом (§ 5.2). Замещение замещающего третьим
+ * лицом прав замещаемого третьему лицу не даёт: нетранзитивность выражена
+ * постройкой `access.visible_units`, а не проверкой здесь.
+ */
+export async function createDelegation(
+  db: Client,
+  actor: Actor,
+  input: CreateDelegation,
+): Promise<DelegationRow> {
+  if (input.delegatorAssignmentId === input.delegateAssignmentId) {
+    throw new AppError('VALIDATION_FAILED', 'Назначение не может замещать само себя.', {
+      fields: [{ path: 'delegateAssignmentId', message: 'Укажите другое назначение' }],
+    });
+  }
+  if (input.endedOn < input.startedOn) {
+    throw new AppError('VALIDATION_FAILED', 'Конец замещения не может быть раньше начала.', {
+      fields: [{ path: 'endedOn', message: 'Дата окончания раньше даты начала' }],
+    });
+  }
+  for (const id of [input.delegatorAssignmentId, input.delegateAssignmentId]) {
+    if ((await selectAssignment(db, id)) === undefined) {
+      throw new AppError('NOT_FOUND', 'Назначение не найдено.');
+    }
+  }
+  const created = await insertDelegation(db, { id: newId(), ...input, createdBy: actor.personId });
+  await record(db, actor, 'delegation.create', {
+    schema: 'org', table: 'delegation', id: created.id,
+    label: `${created.delegatorPositionName}, приказ №${created.orderNumber}`,
+  }, { after: created });
+  return created;
 }
 
 /** Фамилия, имя и отчество: в шапке видна фамилия, а не должность (§ 5.2). */
