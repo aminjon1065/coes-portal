@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Loader2, MoreHorizontal } from 'lucide-react';
+import * as RadixMenu from '@radix-ui/react-dropdown-menu';
 import styles from './deistviya.module.css';
 
 /** Действия — docs/07-КОМПОНЕНТЫ.md § 8. */
@@ -104,35 +104,29 @@ export interface MenuProps {
  * ни одного доступного действия, вводит в заблуждение.
  */
 export function Menu({ label, items, icon }: MenuProps): ReactNode {
-  const [open, setOpen] = useState(false);
   if (items.length === 0) return null;
   const ordered = [...items.filter((i) => i.danger !== true), ...items.filter((i) => i.danger === true)];
   return (
-    <span className={styles.menu}>
-      <IconButton
-        label={label}
-        icon={icon ?? <MoreHorizontal size={16} aria-hidden="true" />}
-        onClick={() => { setOpen(!open); }}
-      />
-      {open ? (
-        <ul className={styles.menuList} role="menu" aria-label={label}>
+    <RadixMenu.Root>
+      <RadixMenu.Trigger asChild>
+        <IconButton label={label} icon={icon ?? <MoreHorizontal size={16} aria-hidden="true" />} />
+      </RadixMenu.Trigger>
+      <RadixMenu.Portal>
+        <RadixMenu.Content className={styles.menuList} sideOffset={4} align="end" aria-label={label}>
           {ordered.map((item) => (
-            <li key={item.id} role="none">
-              <button
-                className={[styles.menuItem, item.danger === true ? styles.menuDanger : ''].filter(Boolean).join(' ')}
-                type="button"
-                role="menuitem"
-                disabled={item.disabled === true}
-                title={item.disabled === true ? item.disabledReason : undefined}
-                onClick={() => { setOpen(false); item.onSelect?.(); }}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            </li>
+            <RadixMenu.Item
+              className={[styles.menuItem, item.danger === true ? styles.menuDanger : ''].filter(Boolean).join(' ')}
+              key={item.id}
+              disabled={item.disabled === true}
+              title={item.disabled === true ? item.disabledReason : undefined}
+              onSelect={() => { item.onSelect?.(); }}
+            >
+              {item.icon}
+              {item.label}
+            </RadixMenu.Item>
           ))}
-        </ul>
-      ) : null}
-    </span>
+        </RadixMenu.Content>
+      </RadixMenu.Portal>
+    </RadixMenu.Root>
   );
 }

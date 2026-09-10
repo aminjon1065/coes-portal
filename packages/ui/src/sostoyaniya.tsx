@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { AlertCircle, Inbox, Loader2, Lock, SearchX, Info, CheckCircle2, AlertTriangle, X, MonitorX } from 'lucide-react';
+import * as RadixTooltip from '@radix-ui/react-tooltip';
+import * as RadixDialog from '@radix-ui/react-dialog';
 import styles from './sostoyaniya.module.css';
 import { Text, Heading } from './tipografika.tsx';
 import { Stack } from './raskladka.tsx';
@@ -152,14 +153,28 @@ export interface TooltipProps {
   readonly text: string;
 }
 
-/** Подсказка § 9.10. Появляется через 400 мс, ширина не более 280 px. */
+/** Задержка появления подсказки — 400 мс (§ 9.10). */
+export const TOOLTIP_DELAY_MS = 400;
+
+/**
+ * Подсказка § 9.10 на примитиве Radix (§ 4 стека): он сам открывает
+ * подсказку по наведению и по фокусу с клавиатуры, закрывает по Esc и
+ * связывает её с элементом через aria-describedby.
+ */
 export function Tooltip({ children, text }: TooltipProps): ReactNode {
-  const id = useId();
   return (
-    <span className={styles.tooltipWrap}>
-      <span aria-describedby={id}>{children}</span>
-      <span className={styles.tooltip} id={id} role="tooltip">{text}</span>
-    </span>
+    <RadixTooltip.Provider delayDuration={TOOLTIP_DELAY_MS}>
+      <RadixTooltip.Root>
+        <RadixTooltip.Trigger asChild>
+          <span className={styles.tooltipWrap}>{children}</span>
+        </RadixTooltip.Trigger>
+        <RadixTooltip.Portal>
+          <RadixTooltip.Content className={styles.tooltip} sideOffset={4}>
+            {text}
+          </RadixTooltip.Content>
+        </RadixTooltip.Portal>
+      </RadixTooltip.Root>
+    </RadixTooltip.Provider>
   );
 }
 
@@ -225,40 +240,38 @@ const DIALOG_WIDTH: Readonly<Record<DialogWidth, string | undefined>> = {
 };
 
 /**
- * Диалог § 9.8. Взят встроенный элемент dialog: он сам захватывает фокус,
- * закрывается по Esc, возвращает фокус вызвавшему элементу и живёт в
- * верхнем слое — то есть диалог поверх диалога получается невозможным.
+ * Диалог § 9.8 на примитиве Radix (§ 4 стека). Примитив захватывает фокус,
+ * закрывает по Esc, возвращает фокус вызвавшему элементу и держит одно
+ * модальное окно: диалог поверх диалога получается невозможным по
+ * устройству, а не по договорённости (06 § 13 п. 14).
  */
 export function Dialog({
   open, title, children, footer, width = 560, dirty = false, error, onClose,
 }: DialogProps): ReactNode {
-  const node = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = node.current;
-    if (dialog === null) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
-
   return (
-    <dialog
-      className={[styles.dialog, DIALOG_WIDTH[width]].filter(Boolean).join(' ')}
-      ref={node}
-      aria-label={title}
-      onCancel={(event) => { event.preventDefault(); onClose(); }}
-      onClick={(event) => { if (!dirty && event.target === node.current) onClose(); }}
-    >
-      <div className={styles.dialogHead}>
-        <Heading level={3}>{title}</Heading>
-        <IconButton label="Закрыть" icon={<X size={16} aria-hidden="true" />} onClick={onClose} />
-      </div>
-      <div className={styles.dialogBody}>
-        {error === undefined ? null : <Banner tone="danger" title="Ошибка">{error}</Banner>}
-        {children}
-      </div>
-      {footer === undefined ? null : <div className={styles.dialogFoot}>{footer}</div>}
-    </dialog>
+    <RadixDialog.Root open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <RadixDialog.Portal>
+        <RadixDialog.Overlay className={styles.overlay} />
+        <RadixDialog.Content
+          className={[styles.dialog, DIALOG_WIDTH[width]].filter(Boolean).join(' ')}
+          // Диалог с несохранёнными данными не закрывается нажатием на
+          // подложку: потерять набранное молча недопустимо (§ 9.8).
+          onPointerDownOutside={(event) => { if (dirty) event.preventDefault(); }}
+        >
+          <div className={styles.dialogHead}>
+            <RadixDialog.Title asChild><Heading level={3}>{title}</Heading></RadixDialog.Title>
+            <RadixDialog.Close asChild>
+              <IconButton label="Закрыть" icon={<X size={16} aria-hidden="true" />} />
+            </RadixDialog.Close>
+          </div>
+          <div className={styles.dialogBody}>
+            {error === undefined ? null : <Banner tone="danger" title="Ошибка">{error}</Banner>}
+            {children}
+          </div>
+          {footer === undefined ? null : <div className={styles.dialogFoot}>{footer}</div>}
+        </RadixDialog.Content>
+      </RadixDialog.Portal>
+    </RadixDialog.Root>
   );
 }
 

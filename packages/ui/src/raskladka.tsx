@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import * as RadixSeparator from '@radix-ui/react-separator';
 import styles from './raskladka.module.css';
 import { Button, Menu } from './deistviya.tsx';
 import type { MenuItem } from './deistviya.tsx';
@@ -105,7 +106,12 @@ export interface DividerProps {
 }
 
 export function Divider({ direction = 'horizontal' }: DividerProps): ReactNode {
-  return <hr className={direction === 'vertical' ? styles.dividerV : styles.dividerH} />;
+  return (
+    <RadixSeparator.Root
+      className={direction === 'vertical' ? styles.dividerV : styles.dividerH}
+      orientation={direction === 'vertical' ? 'vertical' : 'horizontal'}
+    />
+  );
 }
 
 export interface ToolbarProps {

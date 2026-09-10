@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { ArrowDown, ArrowUp, Lock, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import * as RadixAvatar from '@radix-ui/react-avatar';
 import styles from './dannye.module.css';
 import { DASH, formatDateTimeSeconds, formatInteger } from './formaty.ts';
 import { Skeleton } from './sostoyaniya.tsx';
@@ -178,13 +179,20 @@ export function MetricTile({
 export interface AvatarProps {
   readonly name: string;
   readonly size?: 's' | 'm' | 'l';
+  /** Изображение. При его отсутствии выводятся инициалы (§ 6.9). */
+  readonly src?: string;
 }
 
 /** Аватар § 6.9. Фон один для всех: случайная раскраска людей запрещена. */
-export function Avatar({ name, size = 'm' }: AvatarProps): ReactNode {
+export function Avatar({ name, size = 'm', src }: AvatarProps): ReactNode {
   const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('');
   const sized = size === 's' ? styles.avatarS : size === 'l' ? styles.avatarL : styles.avatarM;
-  return <span className={[styles.avatar, sized].join(' ')} aria-label={name} title={name}>{initials}</span>;
+  return (
+    <RadixAvatar.Root className={[styles.avatar, sized].join(' ')} title={name}>
+      {src === undefined ? null : <RadixAvatar.Image className={styles.avatarImage} src={src} alt={name} />}
+      <RadixAvatar.Fallback className={styles.avatarFallback} aria-label={name}>{initials}</RadixAvatar.Fallback>
+    </RadixAvatar.Root>
+  );
 }
 
 export interface AuditEntry {

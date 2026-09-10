@@ -1,5 +1,6 @@
 import { ChevronRight, Loader2, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
+import * as RadixTabs from '@radix-ui/react-tabs';
 import styles from './navigatsiya.module.css';
 import { Counter } from './dannye.tsx';
 import { Button } from './deistviya.tsx';
@@ -163,6 +164,9 @@ export interface TabItem {
   readonly disabled?: boolean;
   /** Причина недоступности обязательна: вкладка без объяснения — тупик (§ 5.4). */
   readonly disabledReason?: string;
+  /** Содержимое вкладки. Область обязана существовать, даже пустая: на неё
+      ссылается aria-controls самой вкладки. */
+  readonly content?: ReactNode;
 }
 
 export interface TabsProps {
@@ -172,25 +176,37 @@ export interface TabsProps {
   readonly onSelect?: (id: string) => void;
 }
 
+/**
+ * Вкладки § 5.4 на примитиве Radix (§ 4 стека): он ведёт перемещение
+ * стрелками, связывает вкладку с её содержимым и удерживает role="tab"
+ * прямым потомком role="tablist".
+ */
 export function Tabs({ tabs, currentId, label = 'Вкладки', onSelect }: TabsProps): ReactNode {
   return (
-    <div className={styles.tabs} role="tablist" aria-label={label}>
+    <RadixTabs.Root value={currentId} onValueChange={(next) => { onSelect?.(next); }}>
+      <RadixTabs.List className={styles.tabs} aria-label={label}>
+        {tabs.map((tab) => (
+          <RadixTabs.Trigger
+            className={styles.tab}
+            key={tab.id}
+            value={tab.id}
+            // Недоступная вкладка остаётся в порядке обхода: иначе причину
+            // недоступности нельзя прочитать с клавиатуры (§ 5.4).
+            aria-disabled={tab.disabled === true}
+            title={tab.disabled === true ? tab.disabledReason : undefined}
+            onClick={(event) => { if (tab.disabled === true) event.preventDefault(); }}
+          >
+            {tab.label}
+            <Counter value={tab.counter ?? 0} />
+          </RadixTabs.Trigger>
+        ))}
+      </RadixTabs.List>
       {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          className={[styles.tab, tab.id === currentId ? styles.tabActive : ''].filter(Boolean).join(' ')}
-          type="button"
-          role="tab"
-          aria-selected={tab.id === currentId}
-          aria-disabled={tab.disabled === true}
-          title={tab.disabled === true ? tab.disabledReason : undefined}
-          onClick={() => { if (tab.disabled !== true) onSelect?.(tab.id); }}
-        >
-          {tab.label}
-          <Counter value={tab.counter ?? 0} />
-        </button>
+        <RadixTabs.Content className={styles.tabPanel} key={tab.id} value={tab.id}>
+          {tab.content}
+        </RadixTabs.Content>
       ))}
-    </div>
+    </RadixTabs.Root>
   );
 }
 

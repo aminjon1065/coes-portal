@@ -53,11 +53,9 @@
 .group > :not(:first-child):not(:last-child) { border-radius: var(--r-0); }
 
 /* § 8.4. Меню. Опасные действия — в конце и цветом опасности. */
-.menu { position: relative; display: inline-flex; }
+/* Список открывается примитивом DropdownMenu из § 4 стека: перемещение
+   стрелками, закрытие по Esc и возврат фокуса — его работа. */
 .menuList {
-  position: absolute;
-  top: 100%;
-  right: 0;
   z-index: 30;
   min-width: var(--w-menu-min);
   margin-top: var(--sp-1);
@@ -71,6 +69,7 @@
 }
 .menuItem {
   display: flex;
+  outline: none;
   align-items: center;
   gap: var(--sp-2);
   width: 100%;
@@ -84,6 +83,6 @@
   text-align: left;
   cursor: pointer;
 }
-.menuItem:hover:not(:disabled) { background-color: var(--c-n-50); }
-.menuItem:disabled { color: var(--c-n-400); cursor: not-allowed; }
+.menuItem[data-highlighted] { background-color: var(--c-n-50); }
+.menuItem[data-disabled] { color: var(--c-n-400); cursor: not-allowed; }
 .menuDanger { color: var(--c-danger-600); }

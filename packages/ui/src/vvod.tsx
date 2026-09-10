@@ -1,6 +1,12 @@
 import { createContext, useContext, useId, useState } from 'react';
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import * as RadixCheckbox from '@radix-ui/react-checkbox';
+import * as RadixRadioGroup from '@radix-ui/react-radio-group';
+import * as RadixSwitch from '@radix-ui/react-switch';
+import * as RadixLabel from '@radix-ui/react-label';
+import * as RadixPopover from '@radix-ui/react-popover';
+import { Check, Minus } from 'lucide-react';
 import styles from './vvod.module.css';
 import { formatDecimal, formatInteger } from './formaty.ts';
 import { Tag } from './dannye.tsx';
@@ -45,10 +51,10 @@ export function Field({
   const id = htmlFor ?? generated;
   return (
     <div className={styles.field}>
-      <label className={styles.label} htmlFor={id}>
+      <RadixLabel.Root className={styles.label} htmlFor={id}>
         {label}
         {required ? <span className={styles.required} aria-hidden="true">{' *'}</span> : null}
-      </label>
+      </RadixLabel.Root>
       {state === 'readonly'
         ? <span className={styles.readonlyValue}>{readonlyValue}</span>
         : <FieldIdContext.Provider value={id}>{children}</FieldIdContext.Provider>}
@@ -212,19 +218,25 @@ export interface CheckboxProps {
 export function Checkbox({
   label, checked, onChange, indeterminate = false, disabled = false, invalid = false,
 }: CheckboxProps): ReactNode {
+  const id = useId();
   return (
-    <label className={[styles.checkbox, disabled ? styles.checkboxDisabled : ''].filter(Boolean).join(' ')}>
-      <input
-        className={styles.checkboxBox}
-        type="checkbox"
-        checked={checked}
+    <span className={[styles.checkbox, disabled ? styles.checkboxDisabled : ''].filter(Boolean).join(' ')}>
+      <RadixCheckbox.Root
+        className={styles.box}
+        id={id}
+        checked={indeterminate ? 'indeterminate' : checked}
         disabled={disabled}
         aria-invalid={invalid}
-        ref={(node) => { if (node !== null) node.indeterminate = indeterminate; }}
-        onChange={(event) => { onChange(event.target.checked); }}
-      />
-      <span className={styles.checkboxLabel}>{label}</span>
-    </label>
+        onCheckedChange={(next) => { onChange(next === true); }}
+      >
+        <RadixCheckbox.Indicator className={styles.boxMark}>
+          {indeterminate
+            ? <Minus size={12} aria-hidden="true" />
+            : <Check size={12} aria-hidden="true" />}
+        </RadixCheckbox.Indicator>
+      </RadixCheckbox.Root>
+      <RadixLabel.Root className={styles.checkboxLabel} htmlFor={id}>{label}</RadixLabel.Root>
+    </span>
   );
 }
 
@@ -247,25 +259,29 @@ export function RadioGroup({ options, value, onChange, name, disabled = false }:
   const generated = useId();
   const group = name ?? generated;
   return (
-    <div className={styles.radioGroup} role="radiogroup">
-      {options.map((option) => (
-        <label
-          className={[styles.checkbox, disabled || option.disabled === true ? styles.checkboxDisabled : ''].filter(Boolean).join(' ')}
-          key={option.value}
-        >
-          <input
-            className={styles.checkboxBox}
-            type="radio"
-            name={group}
-            value={option.value}
-            checked={option.value === value}
-            disabled={disabled || option.disabled === true}
-            onChange={() => { onChange(option.value); }}
-          />
-          <span className={styles.checkboxLabel}>{option.label}</span>
-        </label>
-      ))}
-    </div>
+    <RadixRadioGroup.Root
+      className={styles.radioGroup}
+      value={value}
+      name={group}
+      disabled={disabled}
+      onValueChange={onChange}
+    >
+      {options.map((option) => {
+        const id = `${group}-${option.value}`;
+        const off = disabled || option.disabled === true;
+        return (
+          <span
+            className={[styles.checkbox, off ? styles.checkboxDisabled : ''].filter(Boolean).join(' ')}
+            key={option.value}
+          >
+            <RadixRadioGroup.Item className={styles.radio} id={id} value={option.value} disabled={off}>
+              <RadixRadioGroup.Indicator className={styles.radioMark} />
+            </RadixRadioGroup.Item>
+            <RadixLabel.Root className={styles.checkboxLabel} htmlFor={id}>{option.label}</RadixLabel.Root>
+          </span>
+        );
+      })}
+    </RadixRadioGroup.Root>
   );
 }
 
@@ -281,22 +297,20 @@ export interface SwitchProps {
  * Поля формы, сохраняемые кнопкой, используют Checkbox.
  */
 export function Switch({ label, checked, onChange, disabled = false }: SwitchProps): ReactNode {
+  const id = useId();
   return (
-    <label className={styles.switch}>
-      <input
-        className={styles.label}
-        type="checkbox"
-        role="switch"
+    <span className={styles.switch}>
+      <RadixSwitch.Root
+        className={[styles.switchTrack, checked ? styles.switchOn : ''].filter(Boolean).join(' ')}
+        id={id}
         checked={checked}
         disabled={disabled}
-        hidden
-        onChange={(event) => { onChange(event.target.checked); }}
-      />
-      <span className={[styles.switchTrack, checked ? styles.switchOn : ''].filter(Boolean).join(' ')}>
-        <span className={styles.switchKnob} />
-      </span>
-      <span className={styles.checkboxLabel}>{label}</span>
-    </label>
+        onCheckedChange={onChange}
+      >
+        <RadixSwitch.Thumb className={styles.switchKnob} />
+      </RadixSwitch.Root>
+      <RadixLabel.Root className={styles.checkboxLabel} htmlFor={id}>{label}</RadixLabel.Root>
+    </span>
   );
 }
 
@@ -337,6 +351,7 @@ export function Select({
   const found = query === ''
     ? options
     : options.filter((option) => option.label.toLocaleLowerCase('ru').includes(query.toLocaleLowerCase('ru')));
+  const blocked = state === 'disabled' || state === 'readonly';
 
   const pick = (option: SelectOption): void => {
     if (multiple) {
@@ -347,83 +362,82 @@ export function Select({
     setOpen(false);
   };
 
-  return (
-    <div className={styles.select}>
-      {multiple ? (
-        // Метки со снятием — сами кнопки, поэтому обёртка не может быть
-        // кнопкой: вложенные органы управления запрещены.
-        <div className={controlClass(state === 'disabled' ? 'disabled' : state === 'error' ? 'error' : 'normal')}>
-          {chosen.length === 0 ? null : (
-            <span className={styles.chips}>
-              {chosen.map((option) => (
-                <Tag
-                  key={option.value}
-                  removeLabel={`Убрать «${option.label}»`}
-                  onRemove={() => { onChange(value.filter((v) => v !== option.value)); }}
-                >
-                  {option.expired === true ? `${option.label} (не действует)` : option.label}
-                </Tag>
-              ))}
-            </span>
-          )}
-          <button
-            className={styles.input}
-            id={id ?? fieldId}
-            type="button"
-            disabled={state === 'disabled' || state === 'readonly'}
-            aria-expanded={open}
-            onClick={() => { setOpen(!open); }}
-          >
+  const trigger = multiple
+    // Метки со снятием — сами кнопки, поэтому обёртка не может быть кнопкой:
+    // вложенные органы управления запрещены.
+    ? (
+      <div className={controlClass(state === 'disabled' ? 'disabled' : state === 'error' ? 'error' : 'normal')}>
+        {chosen.length === 0 ? null : (
+          <span className={styles.chips}>
+            {chosen.map((option) => (
+              <Tag
+                key={option.value}
+                removeLabel={`Убрать «${option.label}»`}
+                onRemove={() => { onChange(value.filter((v) => v !== option.value)); }}
+              >
+                {option.expired === true ? `${option.label} (не действует)` : option.label}
+              </Tag>
+            ))}
+          </span>
+        )}
+        <RadixPopover.Trigger asChild>
+          <button className={styles.input} id={id ?? fieldId} type="button" disabled={blocked}>
             {chosen.length === 0 ? placeholder : 'Добавить'}
           </button>
-        </div>
-      ) : (
+        </RadixPopover.Trigger>
+      </div>
+    )
+    : (
+      <RadixPopover.Trigger asChild>
         <button
           className={controlClass(state === 'disabled' ? 'disabled' : state === 'error' ? 'error' : 'normal')}
           id={id ?? fieldId}
           type="button"
-          disabled={state === 'disabled' || state === 'readonly'}
-          aria-expanded={open}
-          onClick={() => { setOpen(!open); }}
+          disabled={blocked}
         >
           {chosen.length === 0
             ? <span className={styles.suffix}>{placeholder}</span>
             : <span>{chosen[0]?.expired === true ? `${chosen[0].label} (не действует)` : chosen[0]?.label}</span>}
         </button>
-      )}
-      {open && state === 'normal' ? (
-        <ul className={styles.selectList} role="listbox">
-          {options.length > SEARCH_FROM ? (
-            <li>
-              <TextInput value={query} onChange={setQuery} placeholder="Поиск" />
-            </li>
+      </RadixPopover.Trigger>
+    );
+
+  return (
+    <RadixPopover.Root open={open} onOpenChange={setOpen}>
+      {trigger}
+      <RadixPopover.Portal>
+        <RadixPopover.Content className={styles.selectList} sideOffset={4} align="start">
+          {state === 'loading' ? <Spinner label="Загрузка списка" /> : null}
+          {state === 'error' ? <ErrorState message="Не удалось загрузить список" onRetry={onRetry} /> : null}
+          {state === 'normal' ? (
+            <>
+              {options.length > SEARCH_FROM ? (
+                <TextInput value={query} onChange={setQuery} placeholder="Поиск" />
+              ) : null}
+              <ul className={styles.options} role="listbox" aria-multiselectable={multiple}>
+                {found.map((option) => (
+                  <li key={option.value}>
+                    <button
+                      className={[styles.option, value.includes(option.value) ? styles.optionCurrent : ''].filter(Boolean).join(' ')}
+                      type="button"
+                      role="option"
+                      aria-selected={value.includes(option.value)}
+                      disabled={option.disabled === true}
+                      onClick={() => { pick(option); }}
+                    >
+                      {option.severityDot}
+                      {option.expired === true ? `${option.label} (не действует)` : option.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {found.length === 0
+                ? <EmptyState kind="notFound" title="Ничего не найдено" hint="Измените условия поиска" />
+                : null}
+            </>
           ) : null}
-          {found.map((option) => (
-            <li key={option.value}>
-              <button
-                className={[styles.option, value.includes(option.value) ? styles.optionCurrent : ''].filter(Boolean).join(' ')}
-                type="button"
-                role="option"
-                aria-selected={value.includes(option.value)}
-                disabled={option.disabled === true}
-                onClick={() => { pick(option); }}
-              >
-                {option.severityDot}
-                {option.expired === true ? `${option.label} (не действует)` : option.label}
-              </button>
-            </li>
-          ))}
-          {found.length === 0 ? (
-            <li>
-              <EmptyState kind="notFound" title="Ничего не найдено" hint="Измените условия поиска" />
-            </li>
-          ) : null}
-        </ul>
-      ) : null}
-      {open && state === 'loading' ? <Spinner label="Загрузка списка" /> : null}
-      {open && state === 'error'
-        ? <ErrorState message="Не удалось загрузить список" onRetry={onRetry} />
-        : null}
-    </div>
+        </RadixPopover.Content>
+      </RadixPopover.Portal>
+    </RadixPopover.Root>
   );
 }

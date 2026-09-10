@@ -131,6 +131,8 @@
 .avatarS { width: var(--sp-6); height: var(--sp-6); }
 .avatarM { width: var(--sp-8); height: var(--sp-8); }
 .avatarL { width: var(--sp-10); height: var(--sp-10); }
+.avatarImage { width: 100%; height: 100%; border-radius: var(--r-full); object-fit: cover; }
+.avatarFallback { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 
 /* § 6.11. Лента журнала. */
 .feed { display: flex; flex-direction: column; gap: var(--sp-3); }

@@ -66,9 +66,9 @@ const РАЗДЕЛЫ = [
 ];
 
 const ВКЛАДКИ = [
-  { id: 'svedeniya', label: 'Сведения' },
-  { id: 'naznacheniya', label: 'Назначения', counter: 3 },
-  { id: 'zameshcheniya', label: 'Замещения' },
+  { id: 'svedeniya', label: 'Сведения', content: <Text variant="body">Сведения о сотруднике</Text> },
+  { id: 'naznacheniya', label: 'Назначения', counter: 3, content: <Text variant="body">Два действующих назначения</Text> },
+  { id: 'zameshcheniya', label: 'Замещения', content: <Text variant="body">Замещений нет</Text> },
   { id: 'zhurnal', label: 'Журнал', disabled: true, disabledReason: 'Журнал доступен обладателю разрешения audit.read' },
 ];
 

@@ -116,7 +116,7 @@
   cursor: pointer;
 }
 .tab:hover:not([aria-disabled='true']) { color: var(--c-n-900); }
-.tabActive { border-bottom-color: var(--c-p-500); color: var(--c-n-900); font-weight: 600; }
+.tab[data-state='active'] { border-bottom-color: var(--c-p-500); color: var(--c-n-900); font-weight: 600; }
 /* Недоступная вкладка остаётся в порядке обхода: иначе причина
    недоступности не будет прочитана с клавиатуры (§ 5.4). */
 .tab[aria-disabled='true'] { color: var(--c-n-400); cursor: not-allowed; }
@@ -131,3 +131,7 @@
   color: var(--c-n-600);
 }
 .paginationCount { font-variant-numeric: tabular-nums; }
+
+/* Область вкладки. Существует всегда, даже пустая: на неё ссылается
+   aria-controls вкладки, и без неё ссылка вела бы в пустоту. */
+.tabPanel { padding-top: var(--sp-3); }

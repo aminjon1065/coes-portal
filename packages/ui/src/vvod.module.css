@@ -56,7 +56,43 @@
 
 /* § 7.11. Флажок: сам знак 16 px, область нажатия 32 px. */
 .checkbox { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--h-hit); cursor: pointer; }
-.checkboxBox { width: var(--sp-4); height: var(--sp-4); accent-color: var(--c-p-500); }
+/* Сам знак 16 px, область нажатия 32 px обеспечивается высотой строки. */
+/* Собственный внутренний отступ кнопки съедает содержимое: при ширине
+   16 px от него остаётся 2 px, и точка выбора превращается в полоску. */
+.box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-0);
+  width: var(--sp-4);
+  height: var(--sp-4);
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--r-1);
+  background-color: var(--c-n-0);
+  color: var(--c-n-0);
+}
+.box[data-state='checked'], .box[data-state='indeterminate'] {
+  border-color: var(--c-p-500);
+  background-color: var(--c-p-500);
+}
+.box:disabled { border-color: var(--c-border); background-color: var(--c-n-50); color: var(--c-n-400); }
+.boxMark { display: inline-flex; color: var(--c-n-0); }
+.radio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-0);
+  width: var(--sp-4);
+  height: var(--sp-4);
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--r-full);
+  background-color: var(--c-n-0);
+}
+.radio[data-state='checked'] { border-color: var(--c-p-500); }
+.radio:disabled { border-color: var(--c-border); background-color: var(--c-n-50); }
+/* Точка и полосы — элементы в потоке строки, ширина и высота к ним
+   не применяются без display: block. */
+.radioMark { display: block; width: var(--sp-2); height: var(--sp-2); border-radius: var(--r-full); background-color: var(--c-p-500); }
 .checkboxLabel { color: var(--c-n-900); font-size: var(--t-body-size); line-height: var(--t-body-line); }
 .checkboxDisabled { color: var(--c-n-400); cursor: not-allowed; }
 
@@ -67,6 +103,8 @@
 .switch { display: inline-flex; align-items: center; gap: var(--sp-2); cursor: pointer; }
 .switchTrack {
   position: relative;
+  border: 0;
+  padding: var(--sp-0);
   width: var(--w-switch);
   height: var(--h-switch);
   border-radius: var(--r-full);
@@ -84,16 +122,15 @@
   background-color: var(--c-n-0);
   transition: transform var(--dur-1) var(--ease);
 }
-.switchOn > .switchKnob { transform: translateX(100%); }
+.switchKnob { display: block; }
+.switchKnob[data-state='checked'] { transform: translateX(100%); }
 
 /* § 7.7. Выбор. Поиск появляется при числе элементов более десяти. */
-.select { position: relative; }
+/* Список открывается примитивом Popover из § 4 стека: он сам закрывается
+   по Esc и по нажатию вне, и сам возвращает фокус вызвавшей кнопке. */
 .selectList {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
   z-index: 30;
+  min-width: var(--w-menu-min);
   max-height: var(--h-list-max);
   margin-top: var(--sp-1);
   border: 1px solid var(--c-border);
@@ -101,8 +138,8 @@
   background-color: var(--c-surface);
   box-shadow: var(--sh-2);
   overflow-y: auto;
-  list-style: none;
 }
+.options { list-style: none; }
 .option {
   display: flex;
   align-items: center;
@@ -182,5 +219,5 @@
 .fileError { color: var(--c-danger-600); font-size: var(--t-small-size); line-height: var(--t-small-line); }
 /* Единственное место, где допустим процент: это доля переданных байтов,
    а не готовность работы (§ 7.14). */
-.progress { width: var(--w-progress); height: var(--sp-2); border-radius: var(--r-full); background-color: var(--c-n-100); overflow: hidden; }
-.progressFill { height: var(--sp-2); background-color: var(--c-p-500); }
+.progress { display: block; width: var(--w-progress); height: var(--sp-2); border-radius: var(--r-full); background-color: var(--c-n-100); overflow: hidden; }
+.progressFill { display: block; height: var(--sp-2); background-color: var(--c-p-500); }

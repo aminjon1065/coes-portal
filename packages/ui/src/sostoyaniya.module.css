@@ -96,6 +96,11 @@
 /* § 9.8. Диалог. Диалог поверх диалога запрещён, поэтому используется
    встроенный элемент dialog: он же даёт захват фокуса и закрытие по Esc. */
 .dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 51;
+  transform: translate(-50%, -50%);
   padding: var(--sp-0);
   border: 0;
   border-radius: var(--r-4);
@@ -103,7 +108,8 @@
   color: var(--c-n-900);
   box-shadow: var(--sh-3);
 }
-.dialog::backdrop { background-color: var(--c-overlay); }
+/* Подложка диалога — отдельный элемент примитива Radix, а не ::backdrop. */
+.overlay { position: fixed; inset: 0; z-index: 50; background-color: var(--c-overlay); }
 .dialogS { width: var(--w-dialog-1); }
 .dialogM { width: var(--w-dialog-2); }
 .dialogL { width: var(--w-dialog-3); }
@@ -127,8 +133,8 @@
 
 /* § 9.11. Указатель свободного места. */
 .disk { display: flex; flex-direction: column; gap: var(--sp-1); }
-.diskBar { height: var(--sp-2); border-radius: var(--r-full); background-color: var(--c-n-100); overflow: hidden; }
-.diskFill { height: var(--sp-2); background-color: var(--c-success-600); }
+.diskBar { display: block; height: var(--sp-2); border-radius: var(--r-full); background-color: var(--c-n-100); overflow: hidden; }
+.diskFill { display: block; height: var(--sp-2); background-color: var(--c-success-600); }
 .diskWarn { background-color: var(--c-warning-600); }
 .diskDanger { background-color: var(--c-danger-600); }
 .diskText { color: var(--c-n-700); font-size: var(--t-small-size); line-height: var(--t-small-line); font-variant-numeric: tabular-nums; }
