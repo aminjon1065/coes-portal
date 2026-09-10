@@ -1,0 +1,36 @@
+import type { Client } from 'pg';
+
+/** Обращения к базе модуля sys. Наружу через public.ts не выходят (§ 3). */
+
+export interface SettingRow {
+  readonly key: string;
+  readonly value: string;
+  readonly updatedAt: string | null;
+}
+
+export async function selectSettings(db: Client): Promise<readonly SettingRow[]> {
+  const { rows } = await db.query<{ key: string; value: string; updated_at: Date | null }>(
+    'SELECT key, value, updated_at FROM sys.setting ORDER BY key',
+  );
+  return rows.map((row) => ({
+    key: row.key,
+    value: row.value,
+    updatedAt: row.updated_at === null ? null : row.updated_at.toISOString(),
+  }));
+}
+
+export async function selectKnownKeys(db: Client): Promise<readonly string[]> {
+  const { rows } = await db.query<{ key: string }>('SELECT key FROM sys.setting');
+  return rows.map((row) => row.key);
+}
+
+export async function updateSetting(db: Client, key: string, value: string): Promise<void> {
+  await db.query('UPDATE sys.setting SET value = $2, updated_at = now() WHERE key = $1', [key, value]);
+}
+
+export async function selectLastMigration(db: Client): Promise<string | null> {
+  const { rows } = await db.query<{ name: string }>(
+    'SELECT name FROM sys.migration ORDER BY version DESC LIMIT 1',
+  );
+  return rows[0]?.name ?? null;
+}

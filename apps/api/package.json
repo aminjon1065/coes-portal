@@ -7,5 +7,10 @@
     "@types/pg": "^8.11.10",
     "pg": "^8.13.1",
     "vitest": "~2.1.9"
+  },
+  "dependencies": {
+    "@coes/core": "workspace:*",
+    "@coes/contracts": "workspace:*",
+    "@coes/db": "workspace:*"
   }
 }

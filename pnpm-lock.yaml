@@ -11,6 +11,12 @@ importers:
       '@axe-core/playwright':
         specifier: ^4.10.1
         version: 4.13.0(playwright-core@1.49.1)
+      '@coes/contracts':
+        specifier: workspace:*
+        version: link:packages/contracts
+      '@coes/core':
+        specifier: workspace:*
+        version: link:packages/core
       '@coes/eslint-plugin':
         specifier: workspace:*
         version: link:packages/eslint-plugin-coes
@@ -100,6 +106,16 @@ importers:
         version: 3.25.2(zod@3.25.76)
 
   apps/api:
+    dependencies:
+      '@coes/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@coes/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@coes/db':
+        specifier: workspace:*
+        version: link:../../packages/db
     devDependencies:
       '@types/pg':
         specifier: ^8.11.10
@@ -133,6 +149,13 @@ importers:
         version: 6.4.3(@types/node@22.20.1)(tsx@4.23.13)(yaml@2.9.0)
 
   packages/contracts:
+    dependencies:
+      '@coes/core':
+        specifier: workspace:*
+        version: link:../core
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       vitest:
         specifier: ~2.1.9

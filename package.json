@@ -26,10 +26,15 @@
     "db:migrate": "tsx packages/db/migrate.ts",
     "audit:verify": "tsx tools/audit-verify/index.ts",
     "db:seed": "tsx packages/db/seed.ts",
-    "dev": "vite --config apps/web/vite.config.ts"
+    "dev": "vite --config apps/web/vite.config.ts",
+    "gen:openapi": "tsx tools/gen-openapi/index.ts",
+    "gen:client": "tsx tools/gen-client/index.ts",
+    "dev:api": "tsx watch apps/api/src/server.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
+    "@coes/contracts": "workspace:*",
+    "@coes/core": "workspace:*",
     "@coes/eslint-plugin": "workspace:*",
     "@eslint/js": "^9.39.5",
     "@fastify/cookie": "^11.1.2",
