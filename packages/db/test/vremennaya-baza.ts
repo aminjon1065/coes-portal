@@ -2,6 +2,7 @@ import { Client } from 'pg';
 import { randomBytes } from 'node:crypto';
 import { databaseUrl } from '../connect.ts';
 import { migrate } from '../migrate.ts';
+import { seed } from '../seed.ts';
 
 /**
  * Каждая проверка схемы выполняется на СВЕЖЕЙ базе: «миграции с нуля»
@@ -14,7 +15,19 @@ export interface TempDatabase {
   drop(): Promise<void>;
 }
 
-export async function createTempDatabase(label: string): Promise<TempDatabase> {
+/**
+ * Приёмочный сценарий выполняется на развёрнутой системе, а развёртывание
+ * загружает начальное наполнение (ПС-0-09). Проверки схемы обходятся без
+ * него, поэтому наполнение включается признаком.
+ */
+export interface TempDatabaseOptions {
+  readonly withSeed?: boolean;
+}
+
+export async function createTempDatabase(
+  label: string,
+  options: TempDatabaseOptions = {},
+): Promise<TempDatabase> {
   const base = databaseUrl();
   // Уникальность — из случайности, а не из часов: правило coes/no-direct-date
   // запрещает обращаться к системному времени мимо packages/core/clock.ts (§ 5.2),
@@ -28,6 +41,7 @@ export async function createTempDatabase(label: string): Promise<TempDatabase> {
 
   const url = base.replace(/\/[^/?]+(\?|$)/, `/${name}$1`);
   await migrate(url);
+  if (options.withSeed === true) await seed(url);
 
   const client = new Client({ connectionString: url });
   await client.connect();

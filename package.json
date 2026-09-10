@@ -38,6 +38,7 @@
     "@coes/eslint-plugin": "workspace:*",
     "@eslint/js": "^9.39.5",
     "@fastify/cookie": "^11.1.2",
+    "@node-rs/argon2": "^2.2.0",
     "@playwright/test": "~1.49.1",
     "@types/estree": "^1.0.6",
     "@types/node": "^22.20.1",

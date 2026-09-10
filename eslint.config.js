@@ -98,7 +98,12 @@ export default tseslint.config(
   {
     // § 3: порядок и границы модулей.
     files: ['apps/api/src/modules/**/*.ts'],
-    rules: { 'coes/module-boundaries': ['error', { order: MODULE_ORDER }] },
+    rules: {
+      'coes/module-boundaries': ['error', { order: MODULE_ORDER }],
+      // Границы модулей обходятся через SQL: имя схемы в строке — обращение
+      // к чужому модулю мимо его входа, и проверка импортов его не видит.
+      'coes/no-foreign-schema': ['error', { order: MODULE_ORDER }],
+    },
   },
   {
     // § 5.2: единственный источник времени — packages/core/clock.ts.

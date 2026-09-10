@@ -5,6 +5,8 @@ import type { Client } from 'pg';
 import { AppError, isAppError } from '@coes/core/errors.ts';
 import { newId } from '@coes/core/id.ts';
 import { registerSysRoutes } from './modules/sys/routes.ts';
+import { registerAuthRoutes } from './modules/access/routes.ts';
+import { listSettings } from './modules/sys/public.ts';
 
 /**
  * Сборка приложения — docs/03-АРХИТЕКТУРА.md § 2, docs/09-API.md § 2, § 4.4.
@@ -23,6 +25,12 @@ export interface AppDeps {
   readonly db: Client;
   /** Путь, по которому считается свободное место (§ 9.11 компонентов). */
   readonly dataPath: string;
+  /**
+   * Ставить ли cookie признак Secure. Всегда, кроме случая, когда узел из
+   * BASE_URL — localhost: это единственное исключение, и оно существует
+   * ради локальной среды исполнителя (docs/05-ДОСТУП.md § 10.3).
+   */
+  readonly secureCookie?: boolean;
 }
 
 export function buildApp(deps: AppDeps): FastifyInstance {
@@ -31,15 +39,27 @@ export function buildApp(deps: AppDeps): FastifyInstance {
     // Номер запроса виден пользователю в состоянии ошибки (§ 9.4 компонентов)
     // и в журнале: по нему обращение сводится с записью.
     genReqId: () => newId(),
-    disableRequestLogging: false,
   });
 
   void app.register(cookie);
 
-  // Защита от подделки межсайтовых запросов (§ 4.4). Проверка стоит до
-  // обработчиков: заголовок, не совпавший с cookie, дальше не проходит.
-  app.addHook('onRequest', async (request) => {
-    if (!MUTATING.has(request.method)) return;
+  /**
+   * Защита от подделки межсайтовых запросов (§ 4.4). Проверка стоит до
+   * обработчиков: заголовок, не совпавший с cookie, дальше не проходит.
+   *
+   * Признак выдаётся на любом чтении, включая ответ «войдите заново»:
+   * иначе первый вход был бы невозможен — заголовку неоткуда было бы
+   * взяться, ведь до входа cookie ещё нет.
+   */
+  app.addHook('onRequest', async (request, reply) => {
+    if (!MUTATING.has(request.method)) {
+      if (request.cookies[CSRF_COOKIE] === undefined) {
+        void reply.setCookie(CSRF_COOKIE, newId(), {
+          httpOnly: false, sameSite: 'strict', path: '/', secure: deps.secureCookie ?? false,
+        });
+      }
+      return;
+    }
     const fromHeader = request.headers[CSRF_HEADER];
     const fromCookie = request.cookies[CSRF_COOKIE];
     if (typeof fromHeader !== 'string' || fromHeader === '' || fromHeader !== fromCookie) {
@@ -75,5 +95,16 @@ export function buildApp(deps: AppDeps): FastifyInstance {
   });
 
   registerSysRoutes(app, deps);
+  registerAuthRoutes(app, {
+    db: deps.db,
+    // Настройки читаются из базы: § 5.11 задаёт порядок «окружение →
+    // sys.setting → умолчание реестра», и подмена этого порядка кешем
+    // означала бы, что правка настройки не действует до перезапуска.
+    settings: async () => Object.fromEntries(
+      (await listSettings(deps.db)).map((item) => [item.key, item.value]),
+    ),
+    secureCookie: deps.secureCookie ?? false,
+    newCsrfToken: () => newId(),
+  });
   return app;
 }
