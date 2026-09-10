@@ -35,20 +35,20 @@ describe('миграции на свежей базе', () => {
     // Барьер против собственной ошибки: при локали C функция lower() оставляет
     // кириллицу как есть, tj_norm (§ 4.3) молча ломается, и поиск по подстроке
     // перестаёт находить что-либо. Ошибка не видна нигде, кроме результата.
-    const { rows } = await db.client.query<{ понижено: string; локаль: string }>(
-      `SELECT lower('ЧУМАЕВ') AS "понижено",
-              (SELECT datctype FROM pg_database WHERE datname = current_database()) AS "локаль"`,
+    const { rows } = await db.client.query<{ downgraded: string; locale: string }>(
+      `SELECT lower('ЧУМАЕВ') AS "downgraded",
+              (SELECT datctype FROM pg_database WHERE datname = current_database()) AS "locale"`,
     );
-    expect(rows[0]?.понижено).toBe('чумаев');
-    expect(rows[0]?.локаль).toMatch(/utf-?8/i);
+    expect(rows[0]?.downgraded).toBe('чумаев');
+    expect(rows[0]?.locale).toMatch(/utf-?8/i);
   });
 
   it('создают словарь, конфигурацию поиска и сопоставление (§ 4)', async () => {
-    const { rows } = await db.client.query<{ есть: boolean }>(`
+    const { rows } = await db.client.query<{ exists: boolean }>(`
       SELECT (SELECT count(*) FROM pg_ts_dict   WHERE dictname = 'tajik_unaccent') = 1
          AND (SELECT count(*) FROM pg_ts_config WHERE cfgname  = 'russian_tj')     = 1
-         AND (SELECT count(*) FROM pg_collation WHERE collname = 'coll_tj')        = 1 AS "есть"
+         AND (SELECT count(*) FROM pg_collation WHERE collname = 'coll_tj')        = 1 AS "exists"
     `);
-    expect(rows[0]?.есть).toBe(true);
+    expect(rows[0]?.exists).toBe(true);
   });
 });

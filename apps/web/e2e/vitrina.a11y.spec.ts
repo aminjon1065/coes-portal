@@ -12,15 +12,15 @@ test('витрина не содержит нарушений доступнос
   await page.evaluate(() => document.fonts.ready);
 
   const { violations } = await new AxeBuilder({ page }).analyze();
-  const тяжёлые = violations.filter((v: Result) => v.impact === 'serious' || v.impact === 'critical');
+  const severe = violations.filter((v: Result) => v.impact === 'serious' || v.impact === 'critical');
 
   // Одного кода нарушения мало: без указания узла и замеренной величины
   // отчёт заставляет искать место вручную.
-  if (тяжёлые.length > 0) {
-    console.error(тяжёлые.map((v: Result) => [
+  if (severe.length > 0) {
+    console.error(severe.map((v: Result) => [
       `${v.id} (${String(v.impact)}): ${v.help}`,
       ...v.nodes.map((node) => `    ${node.target.join(' ')}\n    ${node.failureSummary ?? ''}`),
     ].join('\n')).join('\n'));
   }
-  expect(тяжёлые.map((v: Result) => v.id)).toEqual([]);
+  expect(severe.map((v: Result) => v.id)).toEqual([]);
 });

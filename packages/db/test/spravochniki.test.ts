@@ -16,17 +16,17 @@ describe('справочники', () => {
   }, 90_000);
   afterAll(async () => { await db.drop(); });
 
-  const вставить = (catalogCode: string, code: string): string => `
+  const insert = (catalogCode: string, code: string): string => `
     INSERT INTO ref.catalog_item (id, catalog_id, code, name)
     SELECT gen_random_uuid(), c.id, '${code}', 'Образец'
     FROM ref.catalog c WHERE c.code = '${catalogCode}'`;
 
   it('начальное наполнение загружено целиком и помечено как временное', async () => {
-    const { rows } = await db.client.query<{ справочников: string; элементов: string; временных: string }>(`
-      SELECT (SELECT count(*) FROM ref.catalog)::text AS "справочников",
-             (SELECT count(*) FROM ref.catalog_item)::text AS "элементов",
-             (SELECT count(*) FROM ref.catalog_item WHERE is_provisional)::text AS "временных"`);
-    expect(rows[0]).toEqual({ справочников: '15', элементов: '149', временных: '149' });
+    const { rows } = await db.client.query<{ catalogs: string; items: string; temporary: string }>(`
+      SELECT (SELECT count(*) FROM ref.catalog)::text AS "catalogs",
+             (SELECT count(*) FROM ref.catalog_item)::text AS "items",
+             (SELECT count(*) FROM ref.catalog_item WHERE is_provisional)::text AS "temporary"`);
+    expect(rows[0]).toEqual({ catalogs: '15', items: '149', temporary: '149' });
   });
 
   it('повторное наполнение ничего не дублирует', async () => {
@@ -42,15 +42,15 @@ describe('справочники', () => {
   });
 
   it('код элемента обязан содержать дефис — это данные', async () => {
-    await expect(db.client.query(вставить('MEETING_KIND', 'БЕЗДЕФИСА'))).rejects.toThrow(
+    await expect(db.client.query(insert('MEETING_KIND', 'БЕЗДЕФИСА'))).rejects.toThrow(
       /ck_catalog_item__code_shape/,
     );
   });
 
   it('код элемента, годный для программы, отвергается: на этом стоит проверка П-1', async () => {
     // 'SOV-99' допустим, 'SOV_99' — нет: подчёркивание отдано кодам справочников.
-    await expect(db.client.query(вставить('MEETING_KIND', 'SOV_99'))).rejects.toThrow(/code_shape/);
-    await db.client.query(вставить('MEETING_KIND', 'SOV-99'));
+    await expect(db.client.query(insert('MEETING_KIND', 'SOV_99'))).rejects.toThrow(/code_shape/);
+    await db.client.query(insert('MEETING_KIND', 'SOV-99'));
     await db.client.query("DELETE FROM ref.catalog_item WHERE code = 'SOV-99'");
   });
 
@@ -99,13 +99,13 @@ describe('справочники', () => {
   });
 
   it('признаки элементов читаются как объявлено: ветвление идёт по ним, а не по коду', async () => {
-    const { rows } = await db.client.query<{ code: string; чс: boolean }>(`
-      SELECT code, (attributes->>'isEmergency')::boolean AS "чс" FROM ref.catalog_item
+    const { rows } = await db.client.query<{ code: string; emergency: boolean }>(`
+      SELECT code, (attributes->>'isEmergency')::boolean AS "emergency" FROM ref.catalog_item
       WHERE code IN ('PRI-01','TEH-01','TEH-04') ORDER BY code`);
     expect(rows).toEqual([
-      { code: 'PRI-01', чс: true },   // землетрясение — всегда ЧС
-      { code: 'TEH-01', чс: false },  // пожар — по последствиям, решает дежурный
-      { code: 'TEH-04', чс: false },
+      { code: 'PRI-01', emergency: true },   // землетрясение — всегда ЧС
+      { code: 'TEH-01', emergency: false },  // пожар — по последствиям, решает дежурный
+      { code: 'TEH-04', emergency: false },
     ]);
   });
 

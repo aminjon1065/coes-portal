@@ -15,7 +15,7 @@ describe('оргструктура', () => {
   }, 90_000);
   afterAll(async () => { await db.drop(); });
 
-  const создатьПодразделение = async (code: string, parentCode: string | null): Promise<string> => {
+  const createOrgUnit = async (code: string, parentCode: string | null): Promise<string> => {
     const { rows } = await db.client.query<{ id: string }>(
       `INSERT INTO org.org_unit (id, code, name, parent_id, path)
        SELECT gen_random_uuid(), $1, $1, (SELECT id FROM org.org_unit WHERE code = $2), 'x'::ltree
@@ -26,10 +26,10 @@ describe('оргструктура', () => {
   };
 
   it('начальные подразделения и должности загружены', async () => {
-    const { rows } = await db.client.query<{ подразделений: string; должностей: string }>(`
-      SELECT (SELECT count(*) FROM org.org_unit)::text AS "подразделений",
-             (SELECT count(*) FROM org.position)::text AS "должностей"`);
-    expect(rows[0]).toEqual({ подразделений: '6', должностей: '45' });
+    const { rows } = await db.client.query<{ orgUnits: string; positions: string }>(`
+      SELECT (SELECT count(*) FROM org.org_unit)::text AS "orgUnits",
+             (SELECT count(*) FROM org.position)::text AS "positions"`);
+    expect(rows[0]).toEqual({ orgUnits: '6', positions: '45' });
   });
 
   it('в областном управлении нет должностей центрального аппарата', async () => {
@@ -41,16 +41,16 @@ describe('оргструктура', () => {
   });
 
   it('путь считает база: подчинённое лежит внутри пути вышестоящего', async () => {
-    const { rows } = await db.client.query<{ внутри: boolean }>(`
+    const { rows } = await db.client.query<{ inside: boolean }>(`
       SELECT (SELECT path FROM org.org_unit WHERE code = 'SUG')
-             <@ (SELECT path FROM org.org_unit WHERE code = 'CA') AS "внутри"`);
-    expect(rows[0]?.внутри).toBe(true);
+             <@ (SELECT path FROM org.org_unit WHERE code = 'CA') AS "inside"`);
+    expect(rows[0]?.inside).toBe(true);
   });
 
   it('глубина дерева не ограничена: пять уровней заводятся без возражений', async () => {
-    await создатьПодразделение('L3', 'SUG');
-    await создатьПодразделение('L4', 'L3');
-    await создатьПодразделение('L5', 'L4');
+    await createOrgUnit('L3', 'SUG');
+    await createOrgUnit('L4', 'L3');
+    await createOrgUnit('L5', 'L4');
     const { rows } = await db.client.query<{ n: number }>(
       "SELECT nlevel(path) AS n FROM org.org_unit WHERE code = 'L5'",
     );
@@ -61,11 +61,11 @@ describe('оргструктура', () => {
     await db.client.query(
       "UPDATE org.org_unit SET parent_id = (SELECT id FROM org.org_unit WHERE code = 'KHA') WHERE code = 'L3'",
     );
-    const { rows } = await db.client.query<{ code: string; внутри: boolean }>(`
-      SELECT code, path <@ (SELECT path FROM org.org_unit WHERE code = 'KHA') AS "внутри"
+    const { rows } = await db.client.query<{ code: string; inside: boolean }>(`
+      SELECT code, path <@ (SELECT path FROM org.org_unit WHERE code = 'KHA') AS "inside"
       FROM org.org_unit WHERE code IN ('L3','L4','L5') ORDER BY code`);
     expect(rows).toEqual([
-      { code: 'L3', внутри: true }, { code: 'L4', внутри: true }, { code: 'L5', внутри: true },
+      { code: 'L3', inside: true }, { code: 'L4', inside: true }, { code: 'L5', inside: true },
     ]);
   });
 
@@ -90,7 +90,7 @@ describe('оргструктура', () => {
        VALUES (gen_random_uuid(), 'Раҳимов', 'Далер', 'Саидович') RETURNING id`,
     );
     const person = String(p[0]?.id);
-    const назначить = (positionName: string, unit: string, primary: boolean): Promise<unknown> =>
+    const assign = (positionName: string, unit: string, primary: boolean): Promise<unknown> =>
       db.client.query(
         `INSERT INTO org.assignment (id, person_id, position_id, started_on, is_primary)
          SELECT gen_random_uuid(), $1, p.id, current_date, $2
@@ -99,9 +99,9 @@ describe('оргструктура', () => {
         [person, primary, unit, positionName],
       );
 
-    await назначить('Оперативный дежурный', 'SUG', true);
-    await назначить('Инспектор', 'KHA', false);          // вторая должность — допустима
-    await expect(назначить('Специалист', 'DUS', true)).rejects.toThrow(/ux_assignment__one_primary/);
+    await assign('Оперативный дежурный', 'SUG', true);
+    await assign('Инспектор', 'KHA', false);          // вторая должность — допустима
+    await expect(assign('Специалист', 'DUS', true)).rejects.toThrow(/ux_assignment__one_primary/);
 
     const { rows } = await db.client.query<{ n: string }>(
       'SELECT count(*)::text AS n FROM org.assignment WHERE person_id = $1', [person],
@@ -143,12 +143,12 @@ describe('оргструктура', () => {
       `INSERT INTO org.delegation (id, delegator_assignment_id, delegate_assignment_id, started_on, ended_on, order_number, reason)
        VALUES (gen_random_uuid(), $1, $2, current_date, current_date + 14, 'ПР-12', 'Отпуск')`, [a, b],
     );
-    const { rows: найдено } = await db.client.query<{ order_number: string }>(
+    const { rows: found } = await db.client.query<{ order_number: string }>(
       `SELECT order_number FROM org.delegation
        WHERE delegate_assignment_id = $1 AND NOT is_revoked
          AND current_date BETWEEN started_on AND ended_on`, [b],
     );
-    expect(найдено.map((r) => r.order_number)).toEqual(['ПР-12']);
+    expect(found.map((r) => r.order_number)).toEqual(['ПР-12']);
   });
 
   it('поиск сотрудника нечувствителен к таджикским буквам', async () => {

@@ -22,14 +22,14 @@ describe('идентификаторы', () => {
   });
 
   it('упорядочен по времени: более поздний больше при обычном сравнении строк', () => {
-    const ранний = idFromMs(1788912000000);
-    const поздний = idFromMs(1788912000001);
-    expect(поздний > ранний).toBe(true);
+    const earlier = idFromMs(1788912000000);
+    const later = idFromMs(1788912000001);
+    expect(later > earlier).toBe(true);
   });
 
   it('не повторяется при одном и том же моменте', () => {
-    const набор = new Set(Array.from({ length: 500 }, () => idFromMs(1788912000000)));
-    expect(набор.size).toBe(500);
+    const set = new Set(Array.from({ length: 500 }, () => idFromMs(1788912000000)));
+    expect(set.size).toBe(500);
   });
 
   it('отвергает не-uuid и uuid других версий', () => {

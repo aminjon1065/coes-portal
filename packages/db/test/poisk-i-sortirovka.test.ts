@@ -6,7 +6,7 @@ import { createTempDatabase, type TempDatabase } from './vremennaya-baza.ts';
  * Порядок задан контрактом дословно — docs/04-ДАННЫЕ.md § 4.5 — и проверяется
  * целиком, а не выборочно: одна переставленная буква ломает все реестры.
  */
-const ФАМИЛИИ = [
+const SURNAMES = [
   'Гулов', 'Ғафуров', 'Иброҳимов', 'Каримов', 'Косимов',
   'Қодиров', 'Қосимов', 'Рахимов', 'Раҳимов', 'Умаров',
   'Ӯктамов', 'Хакимов', 'Ҳакимов', 'Чумаев', 'Ҷумаев',
@@ -17,51 +17,51 @@ describe('поиск и сортировка с таджикскими букв�
   beforeAll(async () => {
     db = await createTempDatabase('poisk');
     await db.client.query(`
-      CREATE TABLE фамилия (
-        значение text NOT NULL COLLATE public.coll_tj,
-        поиск tsvector GENERATED ALWAYS AS (to_tsvector('russian_tj', значение)) STORED,
-        норма text GENERATED ALWAYS AS (public.tj_norm(значение)) STORED
+      CREATE TABLE surname (
+        value text NOT NULL COLLATE public.coll_tj,
+        search tsvector GENERATED ALWAYS AS (to_tsvector('russian_tj', value)) STORED,
+        norm text GENERATED ALWAYS AS (public.tj_norm(value)) STORED
       )
     `);
     await db.client.query(
-      `INSERT INTO фамилия (значение) SELECT unnest($1::text[])`,
-      [[...ФАМИЛИИ].sort(() => 0.5 - Math.random())],
+      `INSERT INTO surname (value) SELECT unnest($1::text[])`,
+      [[...SURNAMES].sort(() => 0.5 - Math.random())],
     );
   }, 60_000);
   afterAll(async () => { await db.drop(); });
 
   it('порядок совпадает с § 4.5 по всем пятнадцати позициям', async () => {
-    const { rows } = await db.client.query<{ значение: string }>(
-      'SELECT значение FROM фамилия ORDER BY значение',
+    const { rows } = await db.client.query<{ value: string }>(
+      'SELECT value FROM surname ORDER BY value',
     );
-    expect(rows.map((r) => r.значение)).toEqual(ФАМИЛИИ);
+    expect(rows.map((r) => r.value)).toEqual(SURNAMES);
   });
 
   it('запрос «Рахимов» находит и «Рахимов», и «Раҳимов»', async () => {
-    const { rows } = await db.client.query<{ значение: string }>(
-      `SELECT значение FROM фамилия WHERE поиск @@ plainto_tsquery('russian_tj', 'Рахимов') ORDER BY значение`,
+    const { rows } = await db.client.query<{ value: string }>(
+      `SELECT value FROM surname WHERE search @@ plainto_tsquery('russian_tj', 'Рахимов') ORDER BY value`,
     );
-    expect(rows.map((r) => r.значение)).toEqual(['Рахимов', 'Раҳимов']);
+    expect(rows.map((r) => r.value)).toEqual(['Рахимов', 'Раҳимов']);
   });
 
   it('запрос «Ҳакимов» находит и «Хакимов», и «Ҳакимов»', async () => {
-    const { rows } = await db.client.query<{ значение: string }>(
-      `SELECT значение FROM фамилия WHERE поиск @@ plainto_tsquery('russian_tj', 'Ҳакимов') ORDER BY значение`,
+    const { rows } = await db.client.query<{ value: string }>(
+      `SELECT value FROM surname WHERE search @@ plainto_tsquery('russian_tj', 'Ҳакимов') ORDER BY value`,
     );
-    expect(rows.map((r) => r.значение)).toEqual(['Хакимов', 'Ҳакимов']);
+    expect(rows.map((r) => r.value)).toEqual(['Хакимов', 'Ҳакимов']);
   });
 
   it('поиск по подстроке через tj_norm нечувствителен к таджикским буквам', async () => {
-    const { rows } = await db.client.query<{ значение: string }>(
-      `SELECT значение FROM фамилия WHERE норма LIKE '%' || public.tj_norm($1) || '%' ORDER BY значение`,
+    const { rows } = await db.client.query<{ value: string }>(
+      `SELECT value FROM surname WHERE norm LIKE '%' || public.tj_norm($1) || '%' ORDER BY value`,
       ['Чумаев'],
     );
-    expect(rows.map((r) => r.значение)).toEqual(['Чумаев', 'Ҷумаев']);
+    expect(rows.map((r) => r.value)).toEqual(['Чумаев', 'Ҷумаев']);
   });
 
   it('различие сохраняется: одинаковыми записи не становятся', async () => {
     const { rows } = await db.client.query<{ n: string }>(
-      'SELECT count(DISTINCT значение)::text AS n FROM фамилия',
+      'SELECT count(DISTINCT value)::text AS n FROM surname',
     );
     expect(rows[0]?.n).toBe('15');
   });

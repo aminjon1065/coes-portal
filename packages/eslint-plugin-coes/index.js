@@ -4,6 +4,7 @@ import noDirectDate from './rules/no-direct-date.js';
 import requireScope from './rules/require-scope.js';
 import noRawHttpClient from './rules/no-raw-http-client.js';
 import noStyleAttribute from './rules/no-style-attribute.js';
+import latinIdentifiers from './rules/latin-identifiers.js';
 
 /**
  * Правила, которыми обеспечиваются принципы контракта:
@@ -13,6 +14,7 @@ import noStyleAttribute from './rules/no-style-attribute.js';
  *   require-scope      — docs/05-ДОСТУП.md § 4.5
  *   no-raw-http-client — docs/09-API.md § 9
  *   no-style-attribute — docs/06-ДИЗАЙН-СИСТЕМА.md § 13 п. 11
+ *   latin-identifiers  — docs/13-ГЛОССАРИЙ.md § 3
  */
 const plugin = {
   meta: { name: '@coes/eslint-plugin', version: '0.0.0' },
@@ -23,6 +25,7 @@ const plugin = {
     'require-scope': requireScope,
     'no-raw-http-client': noRawHttpClient,
     'no-style-attribute': noStyleAttribute,
+    'latin-identifiers': latinIdentifiers,
   },
 };
 

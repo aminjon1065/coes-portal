@@ -16,96 +16,96 @@ import { nowMs } from '../../../packages/core/clock.ts';
 const DB_URL = process.env['DATABASE_URL'] ?? 'postgresql://coes_owner:coes_local@127.0.0.1:5432/coes';
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 
-const запустить = (script: string, ...args: string[]): string =>
+const run = (script: string, ...args: string[]): string =>
   execFileSync('bash', [script, ...args], { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
 
-const подключиться = async (): Promise<Client> => {
+const connect = async (): Promise<Client> => {
   const client = new Client({ connectionString: DB_URL });
   await client.connect();
   return client;
 };
 
-const пауза = (ms: number): Promise<void> => new Promise((r) => { setTimeout(r, ms); });
+const pause = (ms: number): Promise<void> => new Promise((r) => { setTimeout(r, ms); });
 
 describe('ПС-0-05. Восстановление из резервной копии', () => {
   it(
     'возвращает и копию, и изменения, сделанные после неё',
     async () => {
-      let db = await подключиться();
+      let db = await connect();
       // Журнал только на добавление, поэтому записи прошлых прогонов остаются
       // в базе навсегда. Метка прогона делает проверку независимой от них.
-      const прогон = randomBytes(4).toString('hex');
+      const runMark = randomBytes(4).toString('hex');
 
       // 1. Зафиксировать состояние.
-      const состояние = async (c: Client): Promise<Record<string, string>> => {
+      const status = async (c: Client): Promise<Record<string, string>> => {
         const { rows } = await c.query<Record<string, string>>(`
-          SELECT (SELECT count(*) FROM org.org_unit)::text     AS "подразделений",
-                 (SELECT count(*) FROM ref.catalog_item)::text AS "справочники",
-                 (SELECT count(*) FROM audit.event)::text      AS "журнал"`);
+          SELECT (SELECT count(*) FROM org.org_unit)::text     AS "orgUnits",
+                 (SELECT count(*) FROM ref.catalog_item)::text AS "catalogs",
+                 (SELECT count(*) FROM audit.event)::text      AS "auditRows"`);
         return rows[0] ?? {};
       };
-      const до = await состояние(db);
+      const before = await status(db);
 
       // 2. Снять полную копию.
-      const вывод = запустить('deploy/backup/backup.sh');
-      const метка = /Копия снята: (\S+)/.exec(вывод)?.[1];
-      expect(метка, 'скрипт копии обязан назвать метку').toBeTruthy();
+      const output = run('deploy/backup/backup.sh');
+      const label = /Копия снята: (\S+)/.exec(output)?.[1];
+      expect(label, 'скрипт копии обязан назвать метку').toBeTruthy();
 
       // 3. Внести десять изменений ПОСЛЕ копии — именно они и проверяются.
       for (let i = 1; i <= 10; i += 1) {
         await db.query(
           `INSERT INTO audit.event (action, entity_schema, entity_table, entity_label)
            VALUES ('org.unit.create', 'org', 'org_unit', $1)`,
-          [`Изменение после копии ${прогон} № ${i}`],
+          [`Изменение после копии ${runMark} № ${i}`],
         );
       }
-      const { rows: п } = await db.query<{ файл: string; момент: string }>(
-        `SELECT pg_walfile_name(pg_current_wal_lsn()) AS "файл", now()::text AS "момент"`,
+      const { rows: p } = await db.query<{ file: string; moment: string }>(
+        `SELECT pg_walfile_name(pg_current_wal_lsn()) AS "file", now()::text AS "moment"`,
       );
-      const текущийФайл = String(п[0]?.файл);
+      const currentFile = String(p[0]?.file);
 
       // 4. Дождаться, пока журнал транзакций попадёт в архив. Ждём именно
       //    архивации, а не форсируем её: в настоящем отказе никто ничего не
       //    форсирует, и потеря ограничена archive_timeout.
-      let заархивирован = false;
-      for (let i = 0; i < 60 && !заархивирован; i += 1) {
-        const { rows } = await db.query<{ последний: string | null }>(
-          'SELECT last_archived_wal AS "последний" FROM pg_stat_archiver',
+      let archived = false;
+      for (let i = 0; i < 60 && !archived; i += 1) {
+        const { rows } = await db.query<{ last: string | null }>(
+          'SELECT last_archived_wal AS "last" FROM pg_stat_archiver',
         );
-        заархивирован = (rows[0]?.последний ?? '') >= текущийФайл;
-        if (!заархивирован) await пауза(1000);
+        archived = (rows[0]?.last ?? '') >= currentFile;
+        if (!archived) await pause(1000);
       }
-      expect(заархивирован, 'журнал транзакций обязан попасть в архив').toBe(true);
+      expect(archived, 'журнал транзакций обязан попасть в архив').toBe(true);
       await db.end();
 
       // 5–6. Отказ и восстановление: скрипт останавливает базу, стирает том
       //      и разворачивает копию, доигрывая архив.
-      const начало = nowMs();
-      const отчёт = запустить('deploy/backup/restore.sh', String(метка));
-      const секунд = Math.round((nowMs() - начало) / 1000);
+      const start = nowMs();
+      const report = run('deploy/backup/restore.sh', String(label));
+      const seconds = Math.round((nowMs() - start) / 1000);
 
-      expect(отчёт).toMatch(/Восстановление завершено/);
-      expect(отчёт).toMatch(/нарушений цепочки не обнаружено/);
+      expect(report).toMatch(/Восстановление завершено/);
+      expect(report).toMatch(/нарушений цепочки не обнаружено/);
 
       // 7. Сверить состояние.
-      db = await подключиться();
-      const после = await состояние(db);
+      db = await connect();
+      const after = await status(db);
 
-      expect(после['подразделений']).toBe(до['подразделений']);
-      expect(после['справочники']).toBe(до['справочники']);
+      expect(after['подразделений']).toBe(before['подразделений']);
+      expect(after['справочники']).toBe(before['справочники']);
 
-      const { rows: восстановленные } = await db.query<{ n: string }>(
+      const { rows: restored } = await db.query<{ n: string }>(
         `SELECT count(*)::text AS n FROM audit.event WHERE entity_label LIKE $1`,
-        [`Изменение после копии ${прогон} %`],
+        [`Изменение после копии ${runMark} %`],
       );
-      expect(восстановленные[0]?.n, 'изменения после копии обязаны вернуться').toBe('10');
+      expect(restored[0]?.n, 'изменения после копии обязаны вернуться').toBe('10');
 
       // Потеря данных: все десять изменений на месте, значит потеряно ноль.
       // Норматив Н-19 — не более 15 минут — выдержан с запасом.
       await db.end();
 
       console.log(
-        `ПС-0-05: восстановление за ${секунд} с; изменений после копии возвращено 10 из 10; потеря 0.`,
+        `ПС-0-05: восстановление за ${seconds} с; изменений после копии возвращено 10 из 10; потеря 0.`,
       );
     },
     240_000,

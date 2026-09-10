@@ -6,7 +6,7 @@ import { createTempDatabase, type TempDatabase } from './vremennaya-baza.ts';
  * правами базы, а не добросовестностью программы.
  * docs/05-ДОСТУП.md § 9.3, docs/04-ДАННЫЕ.md § 13, adr/12.
  */
-const записать = (n: number): string => `
+const write = (n: number): string => `
   INSERT INTO audit.event (action, entity_schema, entity_table, entity_label)
   VALUES ('org.unit.create', 'org', 'org_unit', 'Запись ${n}')
 `;
@@ -15,26 +15,26 @@ describe('журнал действий', () => {
   let db: TempDatabase;
   beforeAll(async () => {
     db = await createTempDatabase('zhurnal');
-    for (const n of [1, 2, 3]) await db.client.query(записать(n));
+    for (const n of [1, 2, 3]) await db.client.query(write(n));
   }, 60_000);
   afterAll(async () => { await db.drop(); });
 
   it('связывает записи в цепочку: prev_hash равен хешу предыдущей', async () => {
-    const { rows } = await db.client.query<{ связано: boolean }>(`
+    const { rows } = await db.client.query<{ linked: boolean }>(`
       SELECT bool_and(
-        CASE WHEN предыдущий IS NULL THEN prev_hash IS NULL ELSE prev_hash = предыдущий END
-      ) AS "связано"
-      FROM (SELECT prev_hash, lag(hash) OVER (ORDER BY id) AS предыдущий FROM audit.event) t
+        CASE WHEN previous IS NULL THEN prev_hash IS NULL ELSE prev_hash = previous END
+      ) AS "linked"
+      FROM (SELECT prev_hash, lag(hash) OVER (ORDER BY id) AS previous FROM audit.event) t
     `);
-    expect(rows[0]?.связано).toBe(true);
+    expect(rows[0]?.linked).toBe(true);
   });
 
   it('пересчитанный хеш совпадает с записанным', async () => {
-    const { rows } = await db.client.query<{ совпало: boolean }>(`
-      SELECT bool_and(hash = digest(coalesce(prev_hash, ''::bytea) || audit.canonical(e)::bytea, 'sha256')) AS "совпало"
+    const { rows } = await db.client.query<{ matched: boolean }>(`
+      SELECT bool_and(hash = digest(coalesce(prev_hash, ''::bytea) || audit.canonical(e)::bytea, 'sha256')) AS "matched"
       FROM audit.event e
     `);
-    expect(rows[0]?.совпало).toBe(true);
+    expect(rows[0]?.matched).toBe(true);
   });
 
   it('роль приложения не может изменить запись — это право в базе', async () => {
@@ -62,7 +62,7 @@ describe('журнал действий', () => {
   it('роль приложения может добавить запись: журнал обязан пополняться', async () => {
     await db.client.query('SET ROLE coes_app');
     try {
-      await db.client.query(записать(4));
+      await db.client.query(write(4));
     } finally {
       await db.client.query('RESET ROLE');
     }
@@ -82,11 +82,11 @@ describe('обнаружение вмешательства в журнал', ()
   let db: TempDatabase;
   beforeAll(async () => {
     db = await createTempDatabase('podmena');
-    for (const n of [1, 2, 3]) await db.client.query(записать(n));
+    for (const n of [1, 2, 3]) await db.client.query(write(n));
   }, 60_000);
   afterAll(async () => { await db.drop(); });
 
-  const проверить = async (): Promise<{ id: string; reason: string } | null> => {
+  const verify = async (): Promise<{ id: string; reason: string } | null> => {
     const { rows } = await db.client.query<{
       id: string; prevHash: string | null; hash: string; expectedHash: string;
     }>(`
@@ -101,7 +101,7 @@ describe('обнаружение вмешательства в журнал', ()
   };
 
   it('до вмешательства нарушений нет', async () => {
-    expect(await проверить()).toBeNull();
+    expect(await verify()).toBeNull();
   });
 
   it('подмена содержимого в обход триггеров обнаруживается', async () => {
@@ -111,7 +111,7 @@ describe('обнаружение вмешательства в журнал', ()
     await db.client.query("UPDATE audit.event SET entity_label = 'подмена' WHERE id = 2");
     await db.client.query('ALTER TABLE audit.event ENABLE TRIGGER forbid_change');
 
-    expect(await проверить()).toEqual({ id: '2', reason: 'содержимое записи изменено' });
+    expect(await verify()).toEqual({ id: '2', reason: 'содержимое записи изменено' });
   });
 
   it('изъятие записи обнаруживается как разрыв связи', async () => {
@@ -120,6 +120,6 @@ describe('обнаружение вмешательства в журнал', ()
     await db.client.query('DELETE FROM audit.event WHERE id = 2');
     await db.client.query('ALTER TABLE audit.event ENABLE TRIGGER forbid_change');
 
-    expect(await проверить()).toEqual({ id: '3', reason: 'связь с предыдущей записью разорвана' });
+    expect(await verify()).toEqual({ id: '3', reason: 'связь с предыдущей записью разорвана' });
   });
 });

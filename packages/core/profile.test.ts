@@ -33,9 +33,9 @@ describe('профиль развёртывания', () => {
   });
 
   it('выбирает значение по профилю', () => {
-    const предел = { local: 6, server: 20 };
-    expect(pick(предел, { [PROFILE_VARIABLE]: 'local' })).toBe(6);
-    expect(pick(предел, { [PROFILE_VARIABLE]: 'server' })).toBe(20);
+    const limit = { local: 6, server: 20 };
+    expect(pick(limit, { [PROFILE_VARIABLE]: 'local' })).toBe(6);
+    expect(pick(limit, { [PROFILE_VARIABLE]: 'server' })).toBe(20);
   });
 
   it('выбор значения без профиля тоже отказывает', () => {

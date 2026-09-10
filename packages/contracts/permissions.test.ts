@@ -12,8 +12,8 @@ describe('разрешения', () => {
   });
 
   it('каждый код соответствует форме «модуль.объект.действие» (§ 2.2)', () => {
-    const плохие = PERMISSION_CODES.filter((code) => !PERMISSION_CODE.test(code));
-    expect(плохие).toEqual([]);
+    const invalid = PERMISSION_CODES.filter((code) => !PERMISSION_CODE.test(code));
+    expect(invalid).toEqual([]);
   });
 
   it('модуль выводится из кода и не задаётся отдельно', () => {
@@ -22,8 +22,8 @@ describe('разрешения', () => {
   });
 
   it('у каждого разрешения есть русское наименование', () => {
-    const безымянные = PERMISSIONS.filter((x) => !/[а-яА-Я]/.test(x.name) || x.name.length < 5);
-    expect(безымянные).toEqual([]);
+    const unnamed = PERMISSIONS.filter((x) => !/[а-яА-Я]/.test(x.name) || x.name.length < 5);
+    expect(unnamed).toEqual([]);
   });
 
   it('опознаёт свой код и отвергает чужой', () => {
@@ -33,8 +33,8 @@ describe('разрешения', () => {
   });
 
   it('перечень покрывает все модули Выпуска 1', () => {
-    const модули = new Set(PERMISSIONS.map((x) => x.module));
-    expect([...модули].sort()).toEqual([
+    const modules = new Set(PERMISSIONS.map((x) => x.module));
+    expect([...modules].sort()).toEqual([
       'access', 'analytics', 'audit', 'geo', 'iam', 'incident',
       'org', 'pdn', 'ref', 'store', 'sys', 'system', 'template',
     ]);

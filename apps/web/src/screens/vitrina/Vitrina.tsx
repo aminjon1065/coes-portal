@@ -28,14 +28,14 @@ import {
 
 /* Строка с таджикскими буквами: § 3.1 требует показать её без замещающих
    прямоугольников (приёмочный сценарий ПС-0-06). */
-const ТАДЖИКСКИЕ = 'Ғафуров Ӯктам Ҳақназарӣ Ҷумъа қишлоқ';
+const TAJIK_LETTERS = 'Ғафуров Ӯктам Ҳақназарӣ Ҷумъа қишлоқ';
 
-const СОСТОЯНИЯ: readonly LifecycleStatus[] = [
+const LIFECYCLE_STATUSES: readonly LifecycleStatus[] = [
   'draft', 'registered', 'clarifying', 'closed', 'cancelled',
   'onApproval', 'approved', 'rejected', 'toDestroy', 'destroyed', 'permanent',
 ];
 
-const ВАЖНОСТЬ: readonly { readonly level: SeverityToken; readonly label: string }[] = [
+const SEVERITY_LEVELS: readonly { readonly level: SeverityToken; readonly label: string }[] = [
   { level: 'sev-1', label: 'Локальный' },
   { level: 'sev-2', label: 'Местный' },
   { level: 'sev-3', label: 'Районный' },
@@ -43,7 +43,7 @@ const ВАЖНОСТЬ: readonly { readonly level: SeverityToken; readonly label
   { level: 'sev-5', label: 'Республиканский' },
 ];
 
-const НАЧЕРТАНИЯ: readonly { readonly variant: TextVariant; readonly name: string }[] = [
+const TEXT_VARIANTS: readonly { readonly variant: TextVariant; readonly name: string }[] = [
   { variant: 'caption', name: 'caption 11/16' },
   { variant: 'small', name: 'small 12/18' },
   { variant: 'body', name: 'body 14/20' },
@@ -51,21 +51,21 @@ const НАЧЕРТАНИЯ: readonly { readonly variant: TextVariant; readonly n
   { variant: 'lead', name: 'lead 16/24' },
 ];
 
-const ВИДЫ_КНОПОК: readonly { readonly kind: ButtonKind; readonly name: string }[] = [
+const BUTTON_KINDS: readonly { readonly kind: ButtonKind; readonly name: string }[] = [
   { kind: 'primary', name: 'основная' },
   { kind: 'normal', name: 'обычная' },
   { kind: 'quiet', name: 'тихая' },
   { kind: 'danger', name: 'опасная' },
 ];
 
-const РАЗДЕЛЫ = [
+const NAV_SECTIONS = [
   { id: 'stol', label: 'Рабочий стол', icon: <Home size={20} aria-hidden="true" />, href: '#stol' },
   { id: 'uved', label: 'Уведомления', icon: <Bell size={20} aria-hidden="true" />, href: '#uved', counter: 7 },
   { id: 'sotr', label: 'Сотрудники', icon: <Users size={20} aria-hidden="true" />, href: '#sotr' },
   { id: 'dok', label: 'Документы', icon: <FileText size={20} aria-hidden="true" />, href: '#dok' },
 ];
 
-const ВКЛАДКИ = [
+const TABS = [
   { id: 'svedeniya', label: 'Сведения', content: <Text variant="body">Сведения о сотруднике</Text> },
   { id: 'naznacheniya', label: 'Назначения', counter: 3, content: <Text variant="body">Два действующих назначения</Text> },
   { id: 'zameshcheniya', label: 'Замещения', content: <Text variant="body">Замещений нет</Text> },
@@ -79,7 +79,7 @@ const DEISTVIYA_POLOSY = [
   { id: 'udalit', label: 'Аннулировать', icon: <Trash2 size={16} aria-hidden="true" />, danger: true },
 ];
 
-const КОЛОНКИ: readonly Column[] = [
+const COLUMNS: readonly Column[] = [
   { key: 'nomer', title: 'Номер', kind: 'text', width: 140, required: true, sortable: true },
   { key: 'vid', title: 'Вид', kind: 'text', required: true },
   { key: 'vazhnost', title: 'Важность', kind: 'severity', required: true,
@@ -91,7 +91,7 @@ const КОЛОНКИ: readonly Column[] = [
   { key: 'zaregistrirovano', title: 'Зарегистрировано', kind: 'datetime', width: 180, sortable: true },
 ];
 
-const СТРОКИ: readonly Row[] = [
+const ROWS: readonly Row[] = [
   { nomer: '2026-SUG-0001', vid: 'Сель', vazhnost: 'sev-3', vazhnostLabel: 'Районный',
     sostoyanie: 'registered', pogiblo: 0, postradalo: 12, zaregistrirovano: '2026-09-08T14:35:00' },
   { nomer: '2026-DUS-0017', vid: 'Пожар', vazhnost: 'sev-2', vazhnostLabel: 'Местный',
@@ -100,7 +100,7 @@ const СТРОКИ: readonly Row[] = [
     sostoyanie: 'closed', pogiblo: null, postradalo: 1234567, zaregistrirovano: '2026-09-07T23:04:00' },
 ];
 
-const ЗАПИСИ_ЖУРНАЛА = [
+const AUDIT_ENTRIES = [
   { id: '1', at: '2026-09-08T14:35:07', who: 'Раҳимов Д. С.', post: 'Оперативный дежурный',
     action: 'Изменил сведения о пострадавших', change: 'Погибло: 2 → 3' },
   { id: '2', at: '2026-09-08T14:31:52', who: 'Ғафуров Ӯ. Ҳ.', post: 'Специалист',
@@ -109,7 +109,7 @@ const ЗАПИСИ_ЖУРНАЛА = [
     action: 'Изменены сведения о пострадавшем' },
 ];
 
-const НАЗНАЧЕНИЯ = [
+const ASSIGNMENTS = [
   { post: 'Оперативный дежурный', unit: 'Согдийская область' },
   { post: 'Специалист', unit: 'Центральный аппарат' },
 ];
@@ -130,10 +130,10 @@ export function Vitrina(): ReactNode {
           <Heading level={3}>Заголовок третьего уровня</Heading>
           <Heading level={4}>Заголовок четвёртого уровня</Heading>
           <Divider />
-          {НАЧЕРТАНИЯ.map(({ variant, name }) => (
+          {TEXT_VARIANTS.map(({ variant, name }) => (
             <Stack key={variant} direction="horizontal" gap="sp-4" align="center">
               <Text variant="caption" tone="secondary">{name}</Text>
-              <Text variant={variant}>{ТАДЖИКСКИЕ}</Text>
+              <Text variant={variant}>{TAJIK_LETTERS}</Text>
             </Stack>
           ))}
           <Divider />
@@ -150,7 +150,7 @@ export function Vitrina(): ReactNode {
 
       <Panel title={<Heading level={3}>Кнопки</Heading>}>
         <Stack gap="sp-4">
-          {ВИДЫ_КНОПОК.map(({ kind, name }) => (
+          {BUTTON_KINDS.map(({ kind, name }) => (
             <Stack key={kind} direction="horizontal" gap="sp-2" align="center" wrap>
               <Text variant="caption" tone="secondary">{name}</Text>
               <Button kind={kind} size="s">Малая</Button>
@@ -176,12 +176,12 @@ export function Vitrina(): ReactNode {
         <Stack gap="sp-4">
           <Section title={<Text variant="bodyStrong">Состояния жизненного цикла</Text>}>
             <Stack direction="horizontal" gap="sp-4" wrap>
-              {СОСТОЯНИЯ.map((status) => <StatusBadge key={status} status={status} />)}
+              {LIFECYCLE_STATUSES.map((status) => <StatusBadge key={status} status={status} />)}
             </Stack>
           </Section>
           <Section title={<Text variant="bodyStrong">Шкала важности — цвет никогда не единственный носитель смысла</Text>}>
             <Stack direction="horizontal" gap="sp-2" wrap>
-              {ВАЖНОСТЬ.map(({ level, label }) => <SeverityBadge key={level} level={level} label={label} />)}
+              {SEVERITY_LEVELS.map(({ level, label }) => <SeverityBadge key={level} level={level} label={label} />)}
             </Stack>
           </Section>
           <Section title={<Text variant="bodyStrong">Метки и счётчики</Text>}>
@@ -213,7 +213,7 @@ export function Vitrina(): ReactNode {
         <Stack gap="sp-4">
           <TopBar
             title="Сотрудники"
-            contexts={НАЗНАЧЕНИЯ}
+            contexts={ASSIGNMENTS}
             notifications={<Counter value={7} />}
             profile={<Text variant="small">Раҳимов Д. С.</Text>}
           />
@@ -231,15 +231,15 @@ export function Vitrina(): ReactNode {
               { label: 'Раҳимов Далер Саидович' },
             ]}
           />
-          <Tabs tabs={ВКЛАДКИ} currentId="naznacheniya" />
+          <Tabs tabs={TABS} currentId="naznacheniya" />
           <Stack direction="horizontal" gap="sp-4" align="center" wrap>
             <Pagination from={1} to={50} total={1234} pageSize={50} />
             <Pagination from={1} to={50} total={12345} pageSize={50} />
             <Pagination from={1} to={50} pageSize={50} busy />
           </Stack>
           <Grid columns={3}>
-            <SideNav sections={РАЗДЕЛЫ} currentId="uved" />
-            <SideNav sections={РАЗДЕЛЫ} currentId="uved" collapsed />
+            <SideNav sections={NAV_SECTIONS} currentId="uved" />
+            <SideNav sections={NAV_SECTIONS} currentId="uved" collapsed />
             <Stack gap="sp-3">
               <Toolbar actions={DEISTVIYA_POLOSY} />
               <Stack direction="horizontal" gap="sp-2" align="center">
@@ -374,8 +374,8 @@ export function Vitrina(): ReactNode {
         <Stack gap="sp-4">
           <Table
             caption="Реестр событий"
-            columns={КОЛОНКИ}
-            rows={СТРОКИ}
+            columns={COLUMNS}
+            rows={ROWS}
             rowKey={(row: Row) => String(row['nomer'])}
             sort={{ key: 'zaregistrirovano', direction: 'desc' }}
             selectedKey="2026-DUS-0017"
@@ -404,12 +404,12 @@ export function Vitrina(): ReactNode {
                 <Avatar name="Ғафуров Ӯктам" />
                 <Avatar name="Ҷумъаев Қосим" size="l" />
               </Stack>
-              <AuditFeed entries={ЗАПИСИ_ЖУРНАЛА} />
+              <AuditFeed entries={AUDIT_ENTRIES} />
             </Stack>
           </Grid>
           <Grid columns={2}>
-            <Table caption="Загрузка" columns={КОЛОНКИ.slice(0, 3)} rows={[]} rowKey={() => ''} state="loading" />
-            <Table caption="Ничего не найдено" columns={КОЛОНКИ.slice(0, 3)} rows={[]} rowKey={() => ''} state="notFound" />
+            <Table caption="Загрузка" columns={COLUMNS.slice(0, 3)} rows={[]} rowKey={() => ''} state="loading" />
+            <Table caption="Ничего не найдено" columns={COLUMNS.slice(0, 3)} rows={[]} rowKey={() => ''} state="notFound" />
           </Grid>
         </Stack>
       </Panel>

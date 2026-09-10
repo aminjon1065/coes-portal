@@ -84,6 +84,12 @@ export default tseslint.config(
     rules: { 'coes/no-intrinsic-jsx': 'error' },
   },
   {
+    // 13 § 3: имена в коде только латиницей. Глоссарий в вопросах
+    // именования старше всех остальных документов (00 § 3, п. 12).
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.cjs'],
+    rules: { 'coes/latin-identifiers': 'error' },
+  },
+  {
     // 06 § 13 п. 11: атрибут style запрещён везде, включая библиотеку.
     // Значение, заданное атрибутом style, минует stylelint.
     files: ['apps/**/*.tsx', 'packages/**/*.tsx'],

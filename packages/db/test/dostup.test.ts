@@ -10,9 +10,9 @@ import { PERMISSIONS } from '../../contracts/permissions.ts';
  */
 describe('доступ', () => {
   let db: TempDatabase;
-  const назначения: Record<string, string> = {};
+  const assignments: Record<string, string> = {};
 
-  const создатьНазначение = async (кто: string, подразделение: string): Promise<string> => {
+  const createAssignment = async (actor: string, orgUnit: string): Promise<string> => {
     const { rows } = await db.client.query<{ id: string }>(
       `WITH p AS (
          INSERT INTO org.person (id, last_name, first_name) VALUES (gen_random_uuid(), $1, 'Имя') RETURNING id
@@ -24,22 +24,22 @@ describe('доступ', () => {
        -- Начало в прошлом: назначение, начатое сегодня, нельзя прекратить вчера,
        -- а именно это и требуется проверить.
        SELECT gen_random_uuid(), p.id, d.id, current_date - 30, true FROM p, d RETURNING id`,
-      [кто, подразделение],
+      [actor, orgUnit],
     );
     return String(rows[0]?.id);
   };
 
-  const замещение = (кого: string, кто: string, дней = 14): Promise<unknown> =>
+  const delegation = (subject: string, actor: string, days = 14): Promise<unknown> =>
     db.client.query(
       `INSERT INTO org.delegation (id, delegator_assignment_id, delegate_assignment_id, started_on, ended_on, order_number)
        VALUES (gen_random_uuid(), $1, $2, current_date, current_date + ($3::integer), 'ПР-1')`,
-      [назначения[кого], назначения[кто], дней],
+      [assignments[subject], assignments[actor], days],
     );
 
-  const область = async (кто: string): Promise<string[]> => {
+  const scope = async (actor: string): Promise<string[]> => {
     const { rows } = await db.client.query<{ code: string }>(
       `SELECT u.code FROM access.visible_units($1) v JOIN org.org_unit u ON u.id = v.org_unit_id ORDER BY u.code`,
-      [назначения[кто]],
+      [assignments[actor]],
     );
     return rows.map((r) => r.code);
   };
@@ -52,10 +52,10 @@ describe('доступ', () => {
       `INSERT INTO org.org_unit (id, code, name, parent_id, path)
        SELECT gen_random_uuid(), 'SUGR1', 'Районный отдел', id, 'x'::ltree FROM org.org_unit WHERE code = 'SUG'`,
     );
-    назначения['А'] = await создатьНазначение('Алиев', 'CA');
-    назначения['Б'] = await создатьНазначение('Бобоев', 'SUG');
-    назначения['В'] = await создатьНазначение('Валиев', 'KHA');
-    назначения['Г'] = await создатьНазначение('Гулов', 'SUGR1');
+    assignments['А'] = await createAssignment('Алиев', 'CA');
+    assignments['Б'] = await createAssignment('Бобоев', 'SUG');
+    assignments['В'] = await createAssignment('Валиев', 'KHA');
+    assignments['Г'] = await createAssignment('Гулов', 'SUGR1');
   }, 90_000);
   afterAll(async () => { await db.drop(); });
 
@@ -63,18 +63,18 @@ describe('доступ', () => {
     const { rows } = await db.client.query<{ code: string; name: string }>(
       'SELECT code, name FROM access.permission ORDER BY code',
     );
-    const ожидается = [...PERMISSIONS].map((p) => ({ code: p.code, name: p.name }))
+    const expected = [...PERMISSIONS].map((p) => ({ code: p.code, name: p.name }))
       .sort((a, b) => a.code.localeCompare(b.code));
-    expect(rows).toEqual(ожидается);
+    expect(rows).toEqual(expected);
   });
 
   it('роли загружены, системные не помечены как придуманные', async () => {
-    const { rows } = await db.client.query<{ n: string; системных: string; придуманных: string }>(`
+    const { rows } = await db.client.query<{ n: string; system: string; invented: string }>(`
       SELECT count(*)::text AS n,
-             count(*) FILTER (WHERE is_system)::text AS "системных",
-             count(*) FILTER (WHERE is_provisional)::text AS "придуманных"
+             count(*) FILTER (WHERE is_system)::text AS "system",
+             count(*) FILTER (WHERE is_provisional)::text AS "invented"
       FROM access.role`);
-    expect(rows[0]).toEqual({ n: '11', системных: '3', придуманных: '8' });
+    expect(rows[0]).toEqual({ n: '11', system: '3', invented: '8' });
   });
 
   it('администратор не читает рабочее содержимое: у него нет incident.card.read', async () => {
@@ -85,28 +85,28 @@ describe('доступ', () => {
   });
 
   it('область видимости — своё подразделение и всё поддерево под ним', async () => {
-    expect(await область('Б')).toEqual(['SUG', 'SUGR1']);
-    expect(await область('Г')).toEqual(['SUGR1']);
+    expect(await scope('Б')).toEqual(['SUG', 'SUGR1']);
+    expect(await scope('Г')).toEqual(['SUGR1']);
   });
 
   it('центральный аппарат видит всё — без отдельной ветви программы', async () => {
-    expect(await область('А')).toEqual(['CA', 'DUS', 'GBA', 'KHA', 'RRP', 'SUG', 'SUGR1']);
+    expect(await scope('А')).toEqual(['CA', 'DUS', 'GBA', 'KHA', 'RRP', 'SUG', 'SUGR1']);
   });
 
   it('право «все регионы» выдаётся точечно и открывает всё', async () => {
     await db.client.query(
       `INSERT INTO access.scope_grant (id, assignment_id, kind, reason)
-       VALUES (gen_random_uuid(), $1, 'all_regions', 'Поручение руководства')`, [назначения['В']],
+       VALUES (gen_random_uuid(), $1, 'all_regions', 'Поручение руководства')`, [assignments['В']],
     );
-    expect(await область('В')).toEqual(['CA', 'DUS', 'GBA', 'KHA', 'RRP', 'SUG', 'SUGR1']);
-    await db.client.query('DELETE FROM access.scope_grant WHERE assignment_id = $1', [назначения['В']]);
-    expect(await область('В')).toEqual(['KHA']);
+    expect(await scope('В')).toEqual(['CA', 'DUS', 'GBA', 'KHA', 'RRP', 'SUG', 'SUGR1']);
+    await db.client.query('DELETE FROM access.scope_grant WHERE assignment_id = $1', [assignments['В']]);
+    expect(await scope('В')).toEqual(['KHA']);
   });
 
   it('право «все регионы» без основания не выдаётся', async () => {
     await expect(db.client.query(
       `INSERT INTO access.scope_grant (id, assignment_id, kind, reason)
-       VALUES (gen_random_uuid(), $1, 'all_regions', '  ')`, [назначения['В']],
+       VALUES (gen_random_uuid(), $1, 'all_regions', '  ')`, [assignments['В']],
     )).rejects.toThrow(/ck_scope_grant__reason/);
   });
 
@@ -114,45 +114,45 @@ describe('доступ', () => {
     await db.client.query(
       `INSERT INTO access.scope_grant (id, assignment_id, kind, org_unit_id, reason)
        SELECT gen_random_uuid(), $1, 'extra_subtree', u.id, 'Курирует область'
-       FROM org.org_unit u WHERE u.code = 'SUG'`, [назначения['В']],
+       FROM org.org_unit u WHERE u.code = 'SUG'`, [assignments['В']],
     );
-    expect(await область('В')).toEqual(['KHA', 'SUG', 'SUGR1']);
-    await db.client.query('DELETE FROM access.scope_grant WHERE assignment_id = $1', [назначения['В']]);
+    expect(await scope('В')).toEqual(['KHA', 'SUG', 'SUGR1']);
+    await db.client.query('DELETE FROM access.scope_grant WHERE assignment_id = $1', [assignments['В']]);
   });
 
   it('замещающий получает область замещаемого', async () => {
-    await замещение('А', 'Б');
-    expect(await область('Б')).toEqual(['CA', 'DUS', 'GBA', 'KHA', 'RRP', 'SUG', 'SUGR1']);
+    await delegation('А', 'Б');
+    expect(await scope('Б')).toEqual(['CA', 'DUS', 'GBA', 'KHA', 'RRP', 'SUG', 'SUGR1']);
   });
 
   it('ТРАНЗИТИВНОСТЬ ЗАПРЕЩЕНА: замещающий замещающего прав не получает', async () => {
     // Б замещает А (центральный аппарат). В замещает Б.
     // В обязан получить область Б, вычисленную БЕЗ её собственных замещений,
     // то есть Согдийскую область — но не центральный аппарат (§ 5.2, п. 3).
-    await замещение('Б', 'В');
-    expect(await область('В')).toEqual(['KHA', 'SUG', 'SUGR1']);
-    expect(await область('В')).not.toContain('CA');
-    expect(await область('В')).not.toContain('DUS');
+    await delegation('Б', 'В');
+    expect(await scope('В')).toEqual(['KHA', 'SUG', 'SUGR1']);
+    expect(await scope('В')).not.toContain('CA');
+    expect(await scope('В')).not.toContain('DUS');
   });
 
   it('отозванное замещение прав не даёт немедленно', async () => {
     await db.client.query(
       `UPDATE org.delegation SET is_revoked = true, revoked_at = now()
-       WHERE delegate_assignment_id = $1`, [назначения['Б']],
+       WHERE delegate_assignment_id = $1`, [assignments['Б']],
     );
-    expect(await область('Б')).toEqual(['SUG', 'SUGR1']);
+    expect(await scope('Б')).toEqual(['SUG', 'SUGR1']);
   });
 
   it('прекращение назначения замещаемого немедленно прекращает замещение', async () => {
     await db.client.query(
       `UPDATE org.delegation SET is_revoked = false, revoked_at = NULL WHERE delegate_assignment_id = $1`,
-      [назначения['Б']],
+      [assignments['Б']],
     );
-    expect(await область('Б')).toContain('CA');
+    expect(await scope('Б')).toContain('CA');
     await db.client.query(
-      'UPDATE org.assignment SET ended_on = current_date - 1 WHERE id = $1', [назначения['А']],
+      'UPDATE org.assignment SET ended_on = current_date - 1 WHERE id = $1', [assignments['А']],
     );
-    expect(await область('Б')).toEqual(['SUG', 'SUGR1']);
+    expect(await scope('Б')).toEqual(['SUG', 'SUGR1']);
   });
 
   it('обращение к чужому содержимому нельзя утвердить самому себе', async () => {
@@ -162,17 +162,17 @@ describe('доступ', () => {
           purpose, basis, approved_by_person_id, approved_at, valid_until)
        SELECT gen_random_uuid(), a.person_id, a.id, 'doc', 'document',
               'Расследование', 'Поручение № 5', a.person_id, now(), now() + interval '72 hours'
-       FROM org.assignment a WHERE a.id = $1`, [назначения['В']],
+       FROM org.assignment a WHERE a.id = $1`, [assignments['В']],
     )).rejects.toThrow(/ck_foreign_access__not_self/);
   });
 
   it('на человека заводится одна учётная запись', async () => {
-    const создать = (login: string): Promise<unknown> => db.client.query(
+    const create = (login: string): Promise<unknown> => db.client.query(
       `INSERT INTO iam.account (id, person_id, login, password_hash)
        SELECT gen_random_uuid(), a.person_id, $2, 'hash' FROM org.assignment a WHERE a.id = $1`,
-      [назначения['Г'], login],
+      [assignments['Г'], login],
     );
-    await создать('gulov');
-    await expect(создать('gulov2')).rejects.toThrow(/account_person_id_key|duplicate key/);
+    await create('gulov');
+    await expect(create('gulov2')).rejects.toThrow(/account_person_id_key|duplicate key/);
   });
 });

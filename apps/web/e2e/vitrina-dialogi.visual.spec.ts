@@ -9,19 +9,19 @@ import { test, expect } from '@playwright/test';
  * проверка, а не элемент управления на витрине: § 14 п. 5 запрещает
  * интерактивные настройки на витрине.
  */
-const ДИАЛОГИ = [
-  { индекс: 0, имя: 'dialog' },
-  { индекс: 1, имя: 'confirm-dialog' },
+const DIALOGS = [
+  { index: 0, name: 'dialog' },
+  { index: 1, name: 'confirm-dialog' },
 ];
 
-for (const { индекс, имя } of ДИАЛОГИ) {
-  test(`диалог ${имя} совпадает с эталоном`, async ({ page }) => {
+for (const { index, name } of DIALOGS) {
+  test(`диалог ${name} совпадает с эталоном`, async ({ page }) => {
     await page.goto('/__ui');
     await page.evaluate(() => document.fonts.ready);
     await page.evaluate((i) => {
-      const узел = document.querySelectorAll('dialog')[i];
-      if (узел instanceof HTMLDialogElement) узел.showModal();
-    }, индекс);
-    await expect(page).toHaveScreenshot(`${имя}.png`, { maxDiffPixelRatio: 0.001 });
+      const node = document.querySelectorAll('dialog')[i];
+      if (node instanceof HTMLDialogElement) node.showModal();
+    }, index);
+    await expect(page).toHaveScreenshot(`${name}.png`, { maxDiffPixelRatio: 0.001 });
   });
 }
