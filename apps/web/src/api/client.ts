@@ -128,6 +128,15 @@ export const api = {
   /** Проверка целостности цепочки журнала */
   verifyAudit: (): Promise<Out<typeof schemas.verifyAuditResponse>> =>
     request(schemas.verifyAuditResponse, 'POST', `/audit/verify`, undefined, undefined),
+  /** Перечень справочников с числом элементов и числом временных */
+  getCatalogs: (query?: Record<string, string | number | boolean>): Promise<Out<typeof schemas.getCatalogsResponse>> =>
+    request(schemas.getCatalogsResponse, 'GET', `/catalogs`, undefined, query),
+  /** Справочник по коду */
+  getCatalog: (code: string): Promise<Out<typeof schemas.getCatalogResponse>> =>
+    request(schemas.getCatalogResponse, 'GET', `/catalogs/${encodeURIComponent(code)}`, undefined, undefined),
+  /** Элементы справочника */
+  getCatalogItems: (code: string, query?: Record<string, string | number | boolean>): Promise<Out<typeof schemas.getCatalogItemsResponse>> =>
+    request(schemas.getCatalogItemsResponse, 'GET', `/catalogs/${encodeURIComponent(code)}/items`, undefined, query),
   /** Настройки и пределы */
   getSettings: (): Promise<Out<typeof schemas.getSettingsResponse>> =>
     request(schemas.getSettingsResponse, 'GET', `/settings`, undefined, undefined),
@@ -139,4 +148,4 @@ export const api = {
     request(schemas.getSystemStatusResponse, 'GET', `/system/status`, undefined, undefined),
 };
 
-export type { loginRequest, loginResponse, logoutResponse, getSessionResponse, changePasswordRequest, changePasswordResponse, switchContextRequest, switchContextResponse, getOrgUnitsResponse, createOrgUnitRequest, createOrgUnitResponse, getOrgUnitResponse, createPositionRequest, createPositionResponse, createPersonRequest, createPersonResponse, createAssignmentRequest, createAssignmentResponse, createDelegationRequest, createDelegationResponse, grantAssignmentRoleRequest, grantAssignmentRoleResponse, createAccountRequest, createAccountResponse, blockAccountRequest, blockAccountResponse, unblockAccountResponse, getAuditEventsResponse, verifyAuditResponse, getSettingsResponse, putSettingsRequest, putSettingsResponse, getSystemStatusResponse } from './schemas.ts';
+export type { loginRequest, loginResponse, logoutResponse, getSessionResponse, changePasswordRequest, changePasswordResponse, switchContextRequest, switchContextResponse, getOrgUnitsResponse, createOrgUnitRequest, createOrgUnitResponse, getOrgUnitResponse, createPositionRequest, createPositionResponse, createPersonRequest, createPersonResponse, createAssignmentRequest, createAssignmentResponse, createDelegationRequest, createDelegationResponse, grantAssignmentRoleRequest, grantAssignmentRoleResponse, createAccountRequest, createAccountResponse, blockAccountRequest, blockAccountResponse, unblockAccountResponse, getAuditEventsResponse, verifyAuditResponse, getCatalogsResponse, getCatalogResponse, getCatalogItemsResponse, getSettingsResponse, putSettingsRequest, putSettingsResponse, getSystemStatusResponse } from './schemas.ts';

@@ -5,7 +5,8 @@ import type { Client } from 'pg';
 import { AppError, isAppError } from '@coes/core/errors.ts';
 import { newId } from '@coes/core/id.ts';
 import { registerSysRoutes } from './modules/sys/routes.ts';
-import { registerAuthRoutes } from './modules/access/routes.ts';
+import { registerAuthRoutes, createGuarded } from './modules/access/routes.ts';
+import { registerRefRoutes } from './modules/ref/routes.ts';
 import { listSettings } from './modules/sys/public.ts';
 
 /**
@@ -94,17 +95,30 @@ export function buildApp(deps: AppDeps): FastifyInstance {
     });
   });
 
-  registerSysRoutes(app, deps);
-  registerAuthRoutes(app, {
+  // Настройки читаются из базы: § 5.11 задаёт порядок «окружение →
+  // sys.setting → умолчание реестра», и подмена этого порядка кешем
+  // означала бы, что правка настройки не действует до перезапуска.
+  const settings = async (): Promise<Readonly<Record<string, string>>> => Object.fromEntries(
+    (await listSettings(deps.db)).map((item) => [item.key, item.value]),
+  );
+
+  const authDeps = {
     db: deps.db,
-    // Настройки читаются из базы: § 5.11 задаёт порядок «окружение →
-    // sys.setting → умолчание реестра», и подмена этого порядка кешем
-    // означала бы, что правка настройки не действует до перезапуска.
-    settings: async () => Object.fromEntries(
-      (await listSettings(deps.db)).map((item) => [item.key, item.value]),
-    ),
+    settings,
     secureCookie: deps.secureCookie ?? false,
     newCsrfToken: () => newId(),
-  });
+  };
+
+  registerSysRoutes(app, deps);
+  registerAuthRoutes(app, authDeps);
+
+  /**
+   * Проверка сессии и прав собирается здесь и раздаётся модулям, которые
+   * старше access и потому не вправе обратиться к нему сами (§ 3). Дерево
+   * § 2 называет это прямо: bootstrap.ts — «сборка приложения: регистрация
+   * модулей и проверок доступа».
+   */
+  registerRefRoutes(app, { db: deps.db, guarded: createGuarded(authDeps), settings });
+
   return app;
 }

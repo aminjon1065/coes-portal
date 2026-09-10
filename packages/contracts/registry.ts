@@ -11,6 +11,9 @@ import {
   account, accountCreateRequest, accountBlockRequest, accountBlockResponse,
   auditListResponse, auditVerifyResponse,
 } from './iam-schema.ts';
+import {
+  catalog, catalogListResponse, catalogItemListResponse, catalogItemFilter,
+} from './ref.ts';
 import { commonFilter } from './obshchee.ts';
 
 /**
@@ -141,6 +144,24 @@ const DESCRIBED = {
     name: 'verifyAudit', method: 'POST', path: '/audit/verify',
     summary: 'Проверка целостности цепочки журнала',
     response: auditVerifyResponse, permission: 'audit.event.verify',
+  },
+
+  getCatalogs: {
+    name: 'getCatalogs', method: 'GET', path: '/catalogs',
+    summary: 'Перечень справочников с числом элементов и числом временных',
+    // Отдельного разрешения нет: docs/05-ДОСТУП.md § 2 относит
+    // ref.catalog.read к тому, что «есть у всех и в ролях не перечисляется».
+    query: catalogItemFilter, response: catalogListResponse, permission: null,
+  },
+  getCatalog: {
+    name: 'getCatalog', method: 'GET', path: '/catalogs/{code}',
+    summary: 'Справочник по коду',
+    response: catalog, permission: null,
+  },
+  getCatalogItems: {
+    name: 'getCatalogItems', method: 'GET', path: '/catalogs/{code}/items',
+    summary: 'Элементы справочника',
+    query: catalogItemFilter, response: catalogItemListResponse, permission: null,
   },
 
   getSettings: {

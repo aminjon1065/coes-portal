@@ -190,24 +190,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
     return sessionView(work, current.mustChangePassword, current.expiresAt);
   });
 
-  /**
-   * Обработчик, требующий вошедшего пользователя и разрешения. Сервер
-   * проверяет права независимо и всегда, даже если интерфейс кнопку не
-   * показал (docs/09-API.md § 8).
-   */
-  function guarded<T>(
-    name: string,
-    handler: (request: FastifyRequest, current: CurrentSession) => Promise<T>,
-  ): (request: FastifyRequest) => Promise<T> {
-    const endpoint = endpointByName(name);
-    return async (request: FastifyRequest): Promise<T> => {
-      const current = await requireSession(request);
-      if (endpoint.permission !== null && endpoint.permission !== 'anonymous') {
-        requirePermission(current.context, endpoint.permission);
-      }
-      return handler(request, current);
-    };
-  }
+  const guarded = createGuarded(deps);
 
   const actorOf = (request: FastifyRequest, current: CurrentSession): Actor => ({
     personId: current.context.personId,
@@ -300,13 +283,58 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
     return { items, nextCursor: null, total: items.length, totalIsExact: true };
   }));
 
-  async function requireSession(request: FastifyRequest): Promise<CurrentSession> {
-    const found = await currentSession(deps, request);
-    if (found === undefined) {
-      throw new AppError('UNAUTHENTICATED', 'Сессия недействительна. Войдите заново.');
-    }
-    return found;
+  const requireSession = async (request: FastifyRequest): Promise<CurrentSession> =>
+    requireLiveSession(deps, request);
+}
+
+/**
+ * Действующая сессия либо отказ. Отсутствие сессии — не ошибка сервера,
+ * а предложение войти заново (docs/05-ДОСТУП.md § 10.3).
+ */
+export async function requireLiveSession(
+  deps: AuthDeps,
+  request: FastifyRequest,
+): Promise<CurrentSession> {
+  const found = await currentSession(deps, request);
+  if (found === undefined) {
+    throw new AppError('UNAUTHENTICATED', 'Сессия недействительна. Войдите заново.');
   }
+  return found;
+}
+
+/**
+ * Обработчик, требующий вошедшего пользователя и разрешения. Сервер
+ * проверяет права независимо и всегда, даже если интерфейс кнопку не
+ * показал (docs/09-API.md § 8).
+ */
+export interface Guarded {
+  <T>(
+    name: string,
+    handler: (request: FastifyRequest, current: CurrentSession) => Promise<T>,
+  ): (request: FastifyRequest) => Promise<T>;
+}
+
+/**
+ * Охранник собирается здесь, а раздаётся модулям сборкой приложения
+ * (bootstrap.ts, дерево docs/03-АРХИТЕКТУРА.md § 2: «регистрация модулей
+ * и проверок доступа»). Модуль старше access — например ref (№ 7) — не
+ * может импортировать access напрямую, и порядок § 3 удерживается тем,
+ * что связку делает сборка, а не модуль.
+ */
+export function createGuarded(deps: AuthDeps): Guarded {
+  return <T>(
+    name: string,
+    handler: (request: FastifyRequest, current: CurrentSession) => Promise<T>,
+  ) => {
+    const endpoint = endpointByName(name);
+    return async (request: FastifyRequest): Promise<T> => {
+      const current = await requireLiveSession(deps, request);
+      if (endpoint.permission !== null && endpoint.permission !== 'anonymous') {
+        requirePermission(current.context, endpoint.permission);
+      }
+      return handler(request, current);
+    };
+  };
 }
 
 /**

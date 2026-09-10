@@ -78,3 +78,71 @@ export function parsePageParams(
   }
   return { limit: asked, cursor: typeof raw.cursor === 'string' ? raw.cursor : undefined };
 }
+
+/**
+ * Курсор постраничного вывода (§ 3.1). Для клиента он непрозрачен: его
+ * нельзя разбирать и составлять. Непрозрачность здесь — не защита, а
+ * обязательство: разобрав курсор, клиент завяжется на порядок сортировки,
+ * и любое его изменение молча сломает выдачу.
+ */
+export interface CursorPosition {
+  readonly sortValue: string;
+  readonly id: string;
+}
+
+export function encodeCursor(position: CursorPosition): string {
+  return Buffer.from(JSON.stringify(position), 'utf8').toString('base64url');
+}
+
+/**
+ * Разбор курсора. Испорченный курсор — отказ проверки, а не пустой список:
+ * пустой список означал бы «данных нет», что неправда.
+ */
+export function decodeCursor(raw: string): CursorPosition {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'));
+  } catch {
+    throw new AppError('VALIDATION_FAILED', 'Курсор страницы испорчен. Откройте список заново.', {
+      fields: [{ path: 'cursor', message: 'Значение не является курсором' }],
+    });
+  }
+  const value = parsed as { sortValue?: unknown; id?: unknown };
+  if (typeof value.sortValue !== 'string' || typeof value.id !== 'string') {
+    throw new AppError('VALIDATION_FAILED', 'Курсор страницы испорчен. Откройте список заново.', {
+      fields: [{ path: 'cursor', message: 'Значение не является курсором' }],
+    });
+  }
+  return { sortValue: value.sortValue, id: value.id };
+}
+
+/**
+ * Разбор параметра `sort` вида «поле:asc» или «поле:desc». Поле вне
+ * перечня допустимых — отказ: молчаливое игнорирование опечатки в условии
+ * отбора приводит к тому, что пользователь видит не те данные и не знает
+ * об этом (§ 3.2).
+ */
+export function parseSort(
+  raw: unknown,
+  allowed: Readonly<Record<string, string>>,
+  fallback: { readonly field: string; readonly descending: boolean },
+): { readonly column: string; readonly field: string; readonly descending: boolean } {
+  if (raw === undefined || raw === '') {
+    return { column: String(allowed[fallback.field]), field: fallback.field, descending: fallback.descending };
+  }
+  if (typeof raw !== 'string') {
+    throw new AppError('VALIDATION_FAILED', 'Условие сортировки должно быть строкой «поле:asc» или «поле:desc».', {
+      fields: [{ path: 'sort', message: 'Ожидается строка' }],
+    });
+  }
+  const [field, order = 'asc'] = raw.split(':');
+  const column = field === undefined ? undefined : allowed[field];
+  if (column === undefined || (order !== 'asc' && order !== 'desc')) {
+    throw new AppError(
+      'VALIDATION_FAILED',
+      `Сортировка «${raw}» недопустима. Разрешены поля: ${Object.keys(allowed).join(', ')}; порядок: asc или desc.`,
+      { fields: [{ path: 'sort', message: 'Недопустимое поле или порядок сортировки' }] },
+    );
+  }
+  return { column, field: String(field), descending: order === 'desc' };
+}

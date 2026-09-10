@@ -2613,6 +2613,532 @@
         }
       }
     },
+    "/api/v1/catalogs": {
+      "get": {
+        "operationId": "getCatalogs",
+        "summary": "Перечень справочников с числом элементов и числом временных",
+        "x-permission": null,
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "isHierarchical": {
+                            "type": "boolean"
+                          },
+                          "isSystem": {
+                            "type": "boolean"
+                          },
+                          "attributeSchema": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "itemCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "provisionalCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "version": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "code",
+                          "name",
+                          "description",
+                          "isHierarchical",
+                          "isSystem",
+                          "attributeSchema",
+                          "itemCount",
+                          "provisionalCount",
+                          "version"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "totalIsExact": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor",
+                    "total",
+                    "totalIsExact"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Отказ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "ACCESS_DENIED",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "LIMIT_REACHED",
+                            "RATE_LIMITED",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "minimum": 0
+                },
+                "cursor": {
+                  "type": "string"
+                },
+                "q": {
+                  "type": "string"
+                },
+                "sort": {
+                  "type": "string"
+                },
+                "onlyActive": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/catalogs/{code}": {
+      "get": {
+        "operationId": "getCatalog",
+        "summary": "Справочник по коду",
+        "x-permission": null,
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "isHierarchical": {
+                      "type": "boolean"
+                    },
+                    "isSystem": {
+                      "type": "boolean"
+                    },
+                    "attributeSchema": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "itemCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "provisionalCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "version": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "description",
+                    "isHierarchical",
+                    "isSystem",
+                    "attributeSchema",
+                    "itemCount",
+                    "provisionalCount",
+                    "version"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Отказ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "ACCESS_DENIED",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "LIMIT_REACHED",
+                            "RATE_LIMITED",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/catalogs/{code}/items": {
+      "get": {
+        "operationId": "getCatalogItems",
+        "summary": "Элементы справочника",
+        "x-permission": null,
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "catalogId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "parentId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "shortName": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "sortOrder": {
+                            "type": "integer"
+                          },
+                          "isActive": {
+                            "type": "boolean"
+                          },
+                          "isProvisional": {
+                            "type": "boolean"
+                          },
+                          "validFrom": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "validTo": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "additionalProperties": {}
+                          },
+                          "colorToken": {
+                            "type": "string",
+                            "enum": [
+                              "sev-1",
+                              "sev-2",
+                              "sev-3",
+                              "sev-4",
+                              "sev-5"
+                            ],
+                            "nullable": true
+                          },
+                          "version": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "catalogId",
+                          "parentId",
+                          "code",
+                          "name",
+                          "shortName",
+                          "sortOrder",
+                          "isActive",
+                          "isProvisional",
+                          "validFrom",
+                          "validTo",
+                          "attributes",
+                          "colorToken",
+                          "version"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "totalIsExact": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor",
+                    "total",
+                    "totalIsExact"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Отказ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_FAILED",
+                            "UNAUTHENTICATED",
+                            "ACCESS_DENIED",
+                            "NOT_FOUND",
+                            "CONFLICT",
+                            "PRECONDITION_FAILED",
+                            "LIMIT_REACHED",
+                            "RATE_LIMITED",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "details",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "minimum": 0
+                },
+                "cursor": {
+                  "type": "string"
+                },
+                "q": {
+                  "type": "string"
+                },
+                "sort": {
+                  "type": "string"
+                },
+                "onlyActive": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        ]
+      }
+    },
     "/api/v1/settings": {
       "get": {
         "operationId": "getSettings",
